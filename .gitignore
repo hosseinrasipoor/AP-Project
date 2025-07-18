@@ -1,0 +1,35 @@
+# پوشه‌های خروجی بیلد
+bin/
+obj/
+
+# فایل‌های مربوط به User در ویژوال استودیو
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# پوشه پکیج‌های nuget
+packages/
+
+# تنظیمات موقتی مربوط به IIS
+.vs/
+*.vspscc
+*.vssscc
+
+# فایل‌های موقتی
+*.tmp
+*.log
+
+# اطلاعات حساسی مثل secrets در ASP.NET Core
+appsettings.Development.json
+appsettings.*.json   ← در صورت نیاز
+
+# فایل‌های مربوط به Rider/Resharper (در صورت استفاده)
+.idea/
+*.DotSettings.user
+
+# فایل‌های سیستمی
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.DS_Store
