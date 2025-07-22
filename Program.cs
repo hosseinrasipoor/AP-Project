@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using UniversityManager.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<UniversityContext>(options =>
+builder.Services.AddDbContext<GolestanContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
