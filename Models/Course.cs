@@ -17,9 +17,9 @@ namespace Golestan.Models
         [MaxLength(50)]
         public string Description { get; set; }
 
-        public DateTime ExamDate { get; set; }
+        public DateTime FinalExamDate { get; set; }
 
-        public ICollection<Section> Sections { get; set; }
+        public ICollection<Section>? Sections { get; set; }
     }
 
 }

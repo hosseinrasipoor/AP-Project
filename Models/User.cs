@@ -7,6 +7,7 @@ namespace Golestan.Models
 {
     public class User
     {
+        [Key,Required]
         public int Id { get; set; }
 
         [Required]
@@ -25,9 +26,9 @@ namespace Golestan.Models
         public string HashedPassword { get; set; }
 
         // روابط
-        public ICollection<UserRole> UserRoles { get; set; }
-        public ICollection<Student> StudentProfiles { get; set; }
-        public ICollection<Instructor> InstructorProfiles { get; set; }
+        public ICollection<UserRole>? UserRoles { get; set; }
+        public ICollection<Student>? StudentProfiles { get; set; }
+        public ICollection<Instructor>? InstructorProfiles { get; set; }
     }
 
 }
