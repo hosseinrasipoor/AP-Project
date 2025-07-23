@@ -1,5 +1,6 @@
 ﻿using Golestan.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UniversityManager.Data;
 
 namespace Golestan.Controllers
@@ -13,9 +14,11 @@ namespace Golestan.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var users = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).ToListAsync();
+
+            return View(users);
         }
     }
 }
