@@ -1,5 +1,6 @@
 ﻿using Golestan.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using UniversityManager.Data;
 
@@ -20,5 +21,8 @@ namespace Golestan.Controllers
 
             return View(users);
         }
+
+        
+
     }
 }

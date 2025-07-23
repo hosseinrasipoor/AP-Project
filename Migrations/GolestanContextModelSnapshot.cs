@@ -120,7 +120,7 @@ namespace Golestan.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Golestan.Models.Section", b =>

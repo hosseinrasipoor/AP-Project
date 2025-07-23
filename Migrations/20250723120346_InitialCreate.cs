@@ -44,7 +44,7 @@ namespace Golestan.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
+                name: "Roles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -53,7 +53,7 @@ namespace Golestan.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Role", x => x.Id);
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -189,15 +189,15 @@ namespace Golestan.Migrations
                 {
                     table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_Role_RoleId",
+                        name: "FK_UserRoles_Roles_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "Role",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserRoles_Role_RoleId1",
+                        name: "FK_UserRoles_Roles_RoleId1",
                         column: x => x.RoleId1,
-                        principalTable: "Role",
+                        principalTable: "Roles",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserRoles_Users_UserId",
@@ -335,7 +335,7 @@ namespace Golestan.Migrations
                 name: "Sections");
 
             migrationBuilder.DropTable(
-                name: "Role");
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");

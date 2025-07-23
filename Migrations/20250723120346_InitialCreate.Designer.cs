@@ -12,7 +12,7 @@ using UniversityManager.Data;
 namespace Golestan.Migrations
 {
     [DbContext(typeof(GolestanContext))]
-    [Migration("20250722145256_InitialCreate")]
+    [Migration("20250723120346_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -123,7 +123,7 @@ namespace Golestan.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Golestan.Models.Section", b =>
