@@ -161,6 +161,82 @@ namespace Golestan.Controllers
         }
 
 
+        [HttpGet]
+        public IActionResult CreateInstructor()
+        {
+            ViewBag.Users = _context.Users
+                .Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                }).ToList();
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult CreateInstructor(CreateInstructorViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Users = _context.Users
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                    }).ToList();
+
+                return View(model);
+            }
+
+            var instructor = new Instructor
+            {
+                UserId = model.UserId,
+                Salary = model.Salary,
+                HireDate = model.HireDate
+            };
+
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            return RedirectToAction("InstructorTable");
+
+        }
+
+        public IActionResult InstructorTable()
+        {
+            var instructors = _context.Instructors
+                .Include(i => i.User)
+                .Select(i => new InstructorViewModel
+                {
+                    InstructorId = i.InstructorId,
+                    UserId = i.UserId,
+                    FullName = $"{i.User.FirstName} {i.User.LastName}",
+                    Email = i.User.Email,
+                    Salary = i.Salary,
+                    HireDate = i.HireDate
+                }).ToList();
+
+            return View(instructors);
+        }
+
+        public async Task<IActionResult> DeleteInstructor(int id)
+        {
+            var instructor = await _context.Instructors.FirstOrDefaultAsync(i => i.InstructorId == id);
+            if (instructor == null)
+                return NotFound();
+
+            
+            var teaches = _context.Teaches.Where(t => t.InstructorId == id);
+
+            _context.Teaches.RemoveRange(teaches);
+
+            _context.Instructors.Remove(instructor);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("InstructorTable");
+        }
 
 
 
