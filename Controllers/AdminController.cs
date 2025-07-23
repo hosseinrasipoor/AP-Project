@@ -29,28 +29,30 @@ namespace Golestan.Controllers
 
 
         [HttpPost]
-        public IActionResult CreateUser(string FirstName, string LastName, string Email, string HashedPassword)
+        public IActionResult CreateUser(CreateUserViewModel model)
         {
-            var exsitingUser = _context.Users.FirstOrDefault(u => u.Email == Email);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            if (exsitingUser != null)
+            if (_context.Users.Any(u => u.Email == model.Email))
             {
-                ViewBag.ErrorMessage = " We already have user with that emailaddress!";
-                return View();
+                ModelState.AddModelError("Email", "A user with this email already exists.");
+                return View(model);
             }
+
             var user = new User
             {
-                FirstName = FirstName,
-                LastName = LastName,
-                Email = Email,
-                HashedPassword = HashedPassword,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                HashedPassword = model.Password,
                 CreatedAt = DateTime.Now,
             };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            return RedirectToAction("UserTable");
+            return RedirectToAction("UserTable"); 
         }
 
         public IActionResult UserTable()
