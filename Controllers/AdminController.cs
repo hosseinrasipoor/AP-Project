@@ -15,66 +15,48 @@ namespace Golestan.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var users = await _context.Users.Include(u => u.UserRoles).ThenInclude(ur => ur.Role).ToListAsync();
-
-            return View(users);
-        }
-
-        public IActionResult Create()
-        {
-            ViewBag.Roles = new SelectList(_context.Roles, "Id", "Name");
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(User user, int[] selectedRoles, bool isStudent, bool isInstructor)
+        public IActionResult CreateUser()
         {
-            if (ModelState.IsValid)
+            return View();
+        }
+
+
+
+        [HttpPost]
+        public IActionResult CreateUser(string FirstName, string LastName, string Email, string HashedPassword)
+        {
+            var exsitingUser = _context.Users.FirstOrDefault(u => u.Email == Email);
+
+            if (exsitingUser != null)
             {
-                user.CreatedAt = DateTime.Now;
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                foreach (var roleId in selectedRoles)
-                {
-                    var userRole = new UserRole
-                    {
-                        UserId = user.Id,
-                        RoleId = roleId
-                    };
-                    _context.UserRoles.Add(userRole);
-                }
-
-                if (isStudent)
-                {
-                    var student = new Student
-                    {
-                        UserId = user.Id,
-                        EnrollmentDate = DateTime.Now
-                    };
-                    _context.Students.Add(student);
-                }
-
-                if (isInstructor)
-                {
-                    var instructor = new Instructor
-                    {
-                        UserId = user.Id,
-                        Salary = 0,
-                        HireDate = DateTime.Now
-                    };
-                    _context.Instructors.Add(instructor);
-                }
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.ErrorMessage = " We already have user with that emailaddress!";
+                return View("Index");
             }
+            var user = new User
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                Email = Email,
+                HashedPassword = HashedPassword,
+                CreatedAt = DateTime.Now,
+            };
 
-            ViewBag.Roles = new SelectList(_context.Roles, "Id", "Name");
-            return View(user);
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            return RedirectToAction("UserTable");
+        }
+
+        public IActionResult UserTable()
+        {
+            var users = _context.Users.Include(users => users.UserRoles).ThenInclude(userRole => userRole.Role).ToList();
+            return View(users);
+
         }
     }
 }
