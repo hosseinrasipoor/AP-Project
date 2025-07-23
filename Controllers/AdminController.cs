@@ -142,6 +142,26 @@ namespace Golestan.Controllers
             return RedirectToAction("StudentTable");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == id);
+            if (student == null)
+                return NotFound();
+
+            var takes = _context.Takes.Where(t => t.StudentId == id);
+
+            _context.Takes.RemoveRange(takes);
+
+            _context.Students.Remove(student);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("StudentTable");
+        }
+
+
+
 
 
 
