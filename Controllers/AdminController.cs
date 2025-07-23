@@ -84,5 +84,67 @@ namespace Golestan.Controllers
 
             return RedirectToAction("UserTable");
         }
+
+        public IActionResult StudentTable()
+        {
+            var students = _context.Students
+                .Include(s => s.User)
+                .Select(s => new StudentViewModel
+                {
+                    StudentId = s.StudentId,
+                    UserId = s.UserId,
+                    FullName = $"{s.User.FirstName} {s.User.LastName}",
+                    Email = s.User.Email,
+                    EnrollmentDate = s.EnrollmentDate
+                }).ToList();
+
+            return View(students);
+        }
+
+
+        [HttpGet]
+        public IActionResult CreateStudent()
+        {
+            ViewBag.Users = _context.Users
+                .Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                }).ToList();
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult CreateStudent(CreateStudentViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Users = _context.Users
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                    }).ToList();
+
+                return View(model);
+            }
+
+            var student = new Student
+            {
+                UserId = model.UserId,
+                EnrollmentDate = model.EnrollmentDate
+            };
+
+            _context.Students.Add(student);
+            _context.SaveChanges();
+
+            return RedirectToAction("StudentTable");
+        }
+
+
+
+
+
     }
 }

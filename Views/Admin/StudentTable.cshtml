@@ -1,0 +1,36 @@
+﻿@using Golestan.ViewModels
+@model List<StudentViewModel>
+@{
+    ViewData["Title"] = "Students";
+}
+
+<h2>Student List</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>StudentId</th>
+            <th>Email</th>
+            <th>Enrollment Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.FullName</td>
+                <td>@student.StudentId</td>
+                <td>@student.Email</td>
+                <td>@student.EnrollmentDate.ToShortDateString()</td>
+                <td>
+                    
+                    <form asp-action="DeleteStudent" asp-route-id="@student.StudentId" method="post" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

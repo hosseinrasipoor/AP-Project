@@ -1,0 +1,30 @@
+﻿@using Golestan.ViewModels
+@model CreateStudentViewModel
+
+@{
+    ViewData["Title"] = "Create Student";
+}
+
+<h2>Create Student</h2>
+
+<form asp-action="CreateStudent" method="post">
+    <div class="form-group">
+        <label asp-for="UserId">Select User</label>
+        <select asp-for="UserId" class="form-control" asp-items="ViewBag.Users"></select>
+        <span asp-validation-for="UserId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EnrollmentDate">Enrollment Date</label>
+        <input asp-for="EnrollmentDate" class="form-control" type="date" />
+        <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Create</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
