@@ -31,7 +31,13 @@ else
                     <td>@Model[i].LastName</td>
                     <td>@Model[i].Email</td>
                     <td>@Model[i].CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <form asp-action="DeleteUser" asp-route-id="@Model[i].Id" method="post" style="display:inline">
+                            <button type="submit" onclick="return confirm('آیا مطمئن هستید؟');">Delete</button>
+                        </form>
+                    </td>
                 </tr>
+            
             }
         </tbody>
     </table>
