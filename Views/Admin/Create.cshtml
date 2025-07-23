@@ -1,0 +1,45 @@
+﻿@model User
+@{
+    ViewBag.Title = "ایجاد کاربر جدید";
+}
+
+<h2>ایجاد کاربر جدید</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="FirstName"></label>
+        <input asp-for="FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName"></label>
+        <input asp-for="LastName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="HashedPassword">رمز عبور</label>
+        <input asp-for="HashedPassword" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>نقش‌ها</label><br />
+        @foreach (var role in (SelectList)ViewBag.Roles)
+        {
+            <label>
+                <input type="checkbox" name="selectedRoles" value="@role.Value" />
+                @role.Text
+            </label>
+
+            <br />
+        }
+    </div>
+
+    <div class="form-group">
+        <input type="checkbox" name="isStudent" /> به عنوان دانشجو<br />
+        <input type="checkbox" name="isInstructor" /> به عنوان استاد<br />
+    </div>
+
+    <button type="submit" class="btn btn-success">ثبت</button>
+</form>

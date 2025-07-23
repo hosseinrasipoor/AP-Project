@@ -50,7 +50,7 @@ namespace UniversityManager.Data
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Role)
-                .WithMany()
+                .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId);
 
             // Takes
