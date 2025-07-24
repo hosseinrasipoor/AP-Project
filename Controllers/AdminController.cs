@@ -368,6 +368,66 @@ namespace Golestan.Controllers
             return RedirectToAction("ClassroomTable");
         }
 
+        public IActionResult TimeSlotTable()
+        {
+            var timeSlots = _context.TimeSlots.ToList();
+            return View(timeSlots);
+        }
 
+        [HttpGet]
+        public IActionResult CreateTimeSlot()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTimeSlot(CreateTimeSlotViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var timeSlot = new TimeSlot
+            {
+                Day = model.Day,
+                StartTime = model.StartTime,
+                EndTime = model.EndTime
+            };
+
+            _context.TimeSlots.Add(timeSlot);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("TimeSlotTable");
+        }
+
+        public async Task<IActionResult> DeleteTimeSlot(int id)
+        {
+            var timeSlot = await _context.TimeSlots
+                .Include(ts => ts.Sections)
+                    .ThenInclude(s => s.Takes)
+                .Include(ts => ts.Sections)
+                    .ThenInclude(s => s.Teach)
+                .FirstOrDefaultAsync(ts => ts.Id == id);
+
+            if (timeSlot == null)
+                return NotFound();
+
+            foreach (var section in timeSlot.Sections)
+            {
+                if (section.Takes != null)
+                    _context.Takes.RemoveRange(section.Takes);
+
+                if (section.Teach != null)
+                    _context.Teaches.Remove(section.Teach);
+            }
+
+            _context.Sections.RemoveRange(timeSlot.Sections);
+            _context.TimeSlots.Remove(timeSlot);
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("TimeSlotTable");
+        }
     }
 }
