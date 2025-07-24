@@ -308,6 +308,65 @@ namespace Golestan.Controllers
             return RedirectToAction("CourseTable");
         }
 
+        public IActionResult ClassroomTable()
+        {
+            var classrooms = _context.Classrooms.ToList();
+            return View(classrooms);
+        }
+
+        [HttpGet]
+        public IActionResult CreateClassroom()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult CreateClassroom(Classroom classroom)
+        {
+            if (!ModelState.IsValid)
+                return View(classroom);
+
+            _context.Classrooms.Add(classroom);
+            _context.SaveChanges();
+
+            return RedirectToAction("ClassroomTable");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteClassroom(int id)
+        {
+            var classroom = await _context.Classrooms
+                .Include(c => c.Sections)
+                    .ThenInclude(s => s.Takes)
+                .Include(c => c.Sections)
+                    .ThenInclude(s => s.Teach)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (classroom == null)
+                return NotFound();
+
+            foreach (var section in classroom.Sections)
+            {
+                
+                if (section.Takes != null && section.Takes.Any())
+                    _context.Takes.RemoveRange(section.Takes);
+
+                
+                if (section.Teach != null)
+                    _context.Teaches.Remove(section.Teach);
+            }
+
+            
+            _context.Sections.RemoveRange(classroom.Sections);
+
+            
+            _context.Classrooms.Remove(classroom);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ClassroomTable");
+        }
 
 
     }
