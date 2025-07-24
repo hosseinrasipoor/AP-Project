@@ -239,6 +239,74 @@ namespace Golestan.Controllers
         }
 
 
+        
+        public IActionResult CreateCourse()
+        {
+            return View();
+        }
+
+        
+        [HttpPost]
+        public async Task<IActionResult> CreateCourse(CreateCourseViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var course = new Course
+            {
+                Title = model.Title,
+                Code = model.Code,
+                Unit = model.Unit,
+                Description = model.Description,
+                FinalExamDate = model.FinalExamDate
+            };
+
+            _context.Courses.Add(course);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("CourseTable");
+        }
+
+        public IActionResult CourseTable()
+        {
+            var courses = _context.Courses.ToList();
+            return View(courses);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCourse(int id)
+        {
+            var course = await _context.Courses
+                .Include(c => c.Sections)
+                    .ThenInclude(s => s.Takes)
+                .Include(c => c.Sections)
+                    .ThenInclude(s => s.Teach)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (course == null)
+                return NotFound();
+
+            foreach (var section in course.Sections)
+            {
+                
+                if (section.Takes != null && section.Takes.Any())
+                    _context.Takes.RemoveRange(section.Takes);
+
+                
+                if (section.Teach != null)
+                    _context.Teaches.Remove(section.Teach);
+            }
+
+            
+            _context.Sections.RemoveRange(course.Sections);
+
+            
+            _context.Courses.Remove(course);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("CourseTable");
+        }
 
 
 
