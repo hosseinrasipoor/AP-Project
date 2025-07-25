@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using UniversityManager.Data;
 using Golestan.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Golestan.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly GolestanContext _context;
