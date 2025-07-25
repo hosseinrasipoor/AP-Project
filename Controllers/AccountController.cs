@@ -41,11 +41,11 @@ namespace Golestan.Controllers
             switch (role)
             {
                 case RoleType.Admin:
-                    return RedirectToAction("Dashboard", "Admin");
+                    return RedirectToAction("Index", "Admin");
                 case RoleType.Instructor:
-                    return RedirectToAction("Dashboard", "Instructor");
+                    return RedirectToAction("Index", "Instructor");
                 case RoleType.Student:
-                    return RedirectToAction("Dashboard", "Student");
+                    return RedirectToAction("Index", "Student");
                 default:
                     return RedirectToAction("Index", "Home");
             }
@@ -122,6 +122,16 @@ namespace Golestan.Controllers
                 }
             }
 
+            if (user.UserRoles.Any(ur => ur.RoleId== 1))
+            {
+                roleOptions.Add(new RoleSelectionViewModel
+                {
+                    ProfileId = 0, // یا هر مقدار مناسبی که تو سیستم تعریف کردی
+                    Role = RoleType.Admin,
+                    DisplayName = $"ادمین - {user.FirstName} {user.LastName}"
+                });
+            }
+
             TempData["UserId"] = user.Id;
             return View("SelectRole", roleOptions);
         }
@@ -135,7 +145,7 @@ namespace Golestan.Controllers
 
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync("MyCookieAuth");
             return RedirectToAction("Login", "Account");
         }
 

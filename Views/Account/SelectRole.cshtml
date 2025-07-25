@@ -10,7 +10,14 @@
             <div>
                 <input type="radio" name="SelectedProfileId" value="@role.ProfileId" required />
                 <input type="hidden" name="Roles[@role.ProfileId]" value="@role.Role" />
-                <label>@role.DisplayName - Id: @role.ProfileId</label>
+                <label>
+                    @role.DisplayName
+                    @if (role.Role != RoleType.Admin)
+                    {
+                        <text> - Id: @role.ProfileId</text>
+                    }
+                </label>
+
             </div>
         }
     </div>
