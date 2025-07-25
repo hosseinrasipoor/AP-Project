@@ -1,0 +1,26 @@
+﻿@model Golestan.ViewModels.AddStudentViewModel
+
+@{
+    ViewData["Title"] = "افزودن دانشجو به سشن";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="AddStudentToSection" method="post">
+    <input type="hidden" asp-for="SectionId" />
+
+    <div class="form-group">
+        <label asp-for="SelectedStudentId"></label>
+        <select asp-for="SelectedStudentId" class="form-control" asp-items="Model.Students">
+            <option value="">-- انتخاب دانشجو --</option>
+        </select>
+        <span asp-validation-for="SelectedStudentId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">افزودن</button>
+    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-secondary">بازگشت</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
