@@ -1,0 +1,25 @@
+﻿
+@model List<Golestan.ViewModels.Account.RoleSelectionViewModel>
+
+<h2>نقش خود را انتخاب کنید</h2>
+
+<form method="post" asp-action="SelectRole" asp-controller="Account">
+    <div>
+        @foreach (var role in Model)
+        {
+            <div>
+                <input type="radio" name="SelectedProfileId" value="@role.ProfileId" required />
+                <input type="hidden" name="Roles[@role.ProfileId]" value="@role.Role" />
+                <label>
+                    @role.DisplayName
+                    @if (role.Role != RoleType.Admin)
+                    {
+                        <text> - Id: @role.ProfileId</text>
+                    }
+                </label>
+
+            </div>
+        }
+    </div>
+    <button type="submit">ادامه</button>
+</form>
