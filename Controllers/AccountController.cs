@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using UniversityManager.Data;
 using Golestan.ViewModels.Account;
+using Golestan.Models;
 
 namespace Golestan.Controllers
 {
@@ -19,6 +20,35 @@ namespace Golestan.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        private async Task<IActionResult> LoginWithProfile(User user, RoleType role, int profileId)
+        {
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, role.ToString()),
+        new Claim("ProfileId", profileId.ToString())
+    };
+
+            var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync("MyCookieAuth", principal);
+
+            switch (role)
+            {
+                case RoleType.Admin:
+                    return RedirectToAction("Dashboard", "Admin");
+                case RoleType.Instructor:
+                    return RedirectToAction("Dashboard", "Instructor");
+                case RoleType.Student:
+                    return RedirectToAction("Dashboard", "Student");
+                default:
+                    return RedirectToAction("Index", "Home");
+            }
         }
 
 
@@ -37,8 +67,9 @@ namespace Golestan.Controllers
                 return View(model);
 
             var user = await _context.Users
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Include(u => u.StudentProfiles)
+                .Include(u => u.InstructorProfiles)
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
 
             if (user == null || user.HashedPassword != model.Password)
@@ -47,26 +78,54 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Email, user.Email)
-    };
+            int totalProfiles = (user.StudentProfiles?.Count ?? 0) + (user.InstructorProfiles?.Count ?? 0);
 
-            foreach (var role in user.UserRoles)
+            // فقط یک نقش-پروفایل داره → مستقیم لاگین شه
+            if (totalProfiles == 1)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role.Role.Name.ToString()));
+                if (user.StudentProfiles?.Count == 1)
+                {
+                    return await LoginWithProfile(user, RoleType.Student, user.StudentProfiles.First().StudentId);
+                }
+                else
+                {
+                    return await LoginWithProfile(user, RoleType.Instructor, user.InstructorProfiles.First().InstructorId);
+                }
             }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+            // چند نقش داره → بفرستش انتخاب نقش
+            var roleOptions = new List<RoleSelectionViewModel>();
 
-            await HttpContext.SignInAsync("MyCookieAuth", principal);
+            if (user.StudentProfiles != null)
+            {
+                foreach (var s in user.StudentProfiles)
+                {
+                    roleOptions.Add(new RoleSelectionViewModel
+                    {
+                        ProfileId = s.StudentId,
+                        Role = RoleType.Student,
+                        DisplayName = $"دانشجو - {user.FirstName} {user.LastName}"
+                    });
+                }
+            }
 
+            if (user.InstructorProfiles != null)
+            {
+                foreach (var i in user.InstructorProfiles)
+                {
+                    roleOptions.Add(new RoleSelectionViewModel
+                    {
+                        ProfileId = i.InstructorId,
+                        Role = RoleType.Instructor,
+                        DisplayName = $"استاد - {user.FirstName} {user.LastName}"
+                    });
+                }
+            }
 
-            return RedirectToAction("Index", "Home");
+            TempData["UserId"] = user.Id;
+            return View("SelectRole", roleOptions);
         }
+
 
         public IActionResult AccessDenied()
         {
@@ -78,6 +137,25 @@ namespace Golestan.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
+        }
+
+
+       
+
+        [HttpPost]
+        public async Task<IActionResult> SelectRole(int SelectedProfileId, [FromForm] Dictionary<int, RoleType> Roles)
+        {
+            if (TempData["UserId"] == null)
+                return RedirectToAction("Login");
+
+            int userId = (int)TempData["UserId"];
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            var role = Roles[SelectedProfileId];
+            return await LoginWithProfile(user, role, SelectedProfileId);
         }
 
 
