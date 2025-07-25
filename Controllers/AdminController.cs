@@ -650,5 +650,31 @@ namespace Golestan.Controllers
         }
 
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SectionDelete(int id)
+        {
+            var section = await _context.Sections
+                .Include(s => s.Takes)
+                .Include(s => s.Teach)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (section == null)
+                return NotFound();
+
+            if (section.Takes != null && section.Takes.Any())
+                _context.Takes.RemoveRange(section.Takes);
+
+            if (section.Teach != null)
+                _context.Teaches.Remove(section.Teach);
+
+            _context.Sections.Remove(section);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("SectionTable");
+        }
+
+
     }
 }

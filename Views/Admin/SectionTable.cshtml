@@ -33,8 +33,13 @@
             <td>@s.FinalExamDate.ToString("yyyy/MM/dd")</td>
             <td>
                 <a asp-action="SectionDetails" asp-route-id="@s.Id" class="btn btn-sm btn-info">جزئیات</a>
-                <a asp-action="SectionDelete" asp-route-id="@s.Id" class="btn btn-sm btn-danger">حذف</a>
+
+                <form asp-action="SectionDelete" asp-route-id="@s.Id" method="post" style="display:inline;" 
+                      onsubmit="return confirm('آیا مطمئن هستید که می‌خواهید حذف کنید؟');">
+                    <button type="submit" class="btn btn-sm btn-danger">حذف</button>
+                </form>
             </td>
+
         </tr>
     }
     </tbody>
