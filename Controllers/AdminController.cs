@@ -80,7 +80,7 @@ namespace Golestan.Controllers
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            return RedirectToAction("UserTable"); 
+            return RedirectToAction("UserTable");
         }
 
         public IActionResult UserTable()
@@ -102,7 +102,7 @@ namespace Golestan.Controllers
             if (user == null)
                 return NotFound();
 
-            
+
             _context.UserRoles.RemoveRange(user.UserRoles);
             _context.Students.RemoveRange(user.StudentProfiles);
             _context.Instructors.RemoveRange(user.InstructorProfiles);
@@ -254,7 +254,7 @@ namespace Golestan.Controllers
             if (instructor == null)
                 return NotFound();
 
-            
+
             var teaches = _context.Teaches.Where(t => t.InstructorId == id);
 
             _context.Teaches.RemoveRange(teaches);
@@ -267,13 +267,13 @@ namespace Golestan.Controllers
         }
 
 
-        
+
         public IActionResult CreateCourse()
         {
             return View();
         }
 
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateCourse(CreateCourseViewModel model)
         {
@@ -316,19 +316,19 @@ namespace Golestan.Controllers
 
             foreach (var section in course.Sections)
             {
-                
+
                 if (section.Takes != null && section.Takes.Any())
                     _context.Takes.RemoveRange(section.Takes);
 
-                
+
                 if (section.Teach != null)
                     _context.Teaches.Remove(section.Teach);
             }
 
-            
+
             _context.Sections.RemoveRange(course.Sections);
 
-            
+
             _context.Courses.Remove(course);
 
             await _context.SaveChangesAsync();
@@ -376,19 +376,19 @@ namespace Golestan.Controllers
 
             foreach (var section in classroom.Sections)
             {
-                
+
                 if (section.Takes != null && section.Takes.Any())
                     _context.Takes.RemoveRange(section.Takes);
 
-                
+
                 if (section.Teach != null)
                     _context.Teaches.Remove(section.Teach);
             }
 
-            
+
             _context.Sections.RemoveRange(classroom.Sections);
 
-            
+
             _context.Classrooms.Remove(classroom);
 
             await _context.SaveChangesAsync();
@@ -696,19 +696,23 @@ namespace Golestan.Controllers
             var model = new SectionDetailsViewModel
             {
                 Id = section.Id,
-                CourseTitle = section.Course?.Title ?? "نامعلوم",
+                CourseTitle = section.Course.Title,
                 Year = section.Year,
                 Semester = section.Semester,
-                ClassroomName = $"{section.Classroom?.Building} - {section.Classroom?.RoomNumber}",
-                TimeSlotInfo = $"{section.TimeSlot?.Day} {section.TimeSlot?.StartTime:hh\\:mm} - {section.TimeSlot?.EndTime:hh\\:mm}",
+                ClassroomName = section.Classroom.Building + " " + section.Classroom,
+                TimeSlotInfo = $"{section.TimeSlot.Day} {section.TimeSlot.StartTime} - {section.TimeSlot.EndTime}",
                 FinalExamDate = section.FinalExamDate,
-                InstructorName = section.Teach?.Instructor?.User?.FirstName + section.Teach?.Instructor?.User?.LastName, // null یا نام استاد
-                Students = section.Takes?.Select(take => new StudentInSectionViewModel
+                InstructorName = section.Teach?.Instructor != null
+                     ? section.Teach.Instructor.User.FirstName + " " + section.Teach.Instructor.User.LastName
+                     : null,
+                Students = section.Takes.Select(t => new StudentInSectionViewModel
                 {
-                    StudentId = take.StudentId,
-                    StudentName = take.Student.User.FirstName + take.Student.User.LastName
-                }).ToList() ?? new List<StudentInSectionViewModel>()
+                    StudentId = t.StudentId,
+                    StudentName = t.Student.User.FirstName + " " + t.Student.User.LastName,
+                    Grade = t.Grade
+                }).ToList()
             };
+
 
             return View(model);
         }
@@ -918,6 +922,79 @@ namespace Golestan.Controllers
 
             return RedirectToAction("SectionDetails", new { id = model.SectionId });
         }
+
+        // نمایش فرم ویرایش نمره برای یک دانشجو در یک سشن
+        [HttpGet]
+        public async Task<IActionResult> UpdateGrade(int sectionId, int studentId)
+        {
+            var take = await _context.Takes
+                .Include(t => t.Student)
+                .ThenInclude(s => s.User)
+                .FirstOrDefaultAsync(t => t.SectionId == sectionId && t.StudentId == studentId);
+
+            if (take == null)
+                return NotFound();
+
+            var model = new UpdateGradeViewModel
+            {
+                SectionId = sectionId,
+                StudentId = studentId,
+                Grade = take.Grade,
+                StudentName = take.Student.User.FirstName + " " + take.Student.User.LastName
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateGrade(UpdateGradeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine("Validation Error: " + error.ErrorMessage);
+                }
+                // وقتی خطا داریم، نام دانشجو رو از دیتابیس دوباره بگیریم
+                var student = await _context.Students
+                    .Include(s => s.User)
+                    .FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
+
+                model.StudentName = student != null ? student.User.FirstName + " " + student.User.LastName : "";
+
+                return View(model);
+            }
+
+            var take = await _context.Takes
+                .FirstOrDefaultAsync(t => t.SectionId == model.SectionId && t.StudentId == model.StudentId);
+
+            if (take == null)
+                return NotFound();
+
+            take.Grade = model.Grade;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("SectionDetails", new { id = model.SectionId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveStudent(int sectionId, int studentId)
+        {
+            // پیدا کردن رکورد Take مربوط به این دانشجو و سشن
+            var take = await _context.Takes
+                .FirstOrDefaultAsync(t => t.SectionId == sectionId && t.StudentId == studentId);
+
+            if (take == null)
+            {
+                return NotFound();
+            }
+
+            _context.Takes.Remove(take);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("SectionDetails", new { id = sectionId });
+        }
+
 
 
     }

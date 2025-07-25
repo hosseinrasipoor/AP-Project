@@ -21,6 +21,7 @@
     <thead>
         <tr>
             <th>نام دانشجو</th>
+            <th>نمره</th>  <!-- اضافه شده -->
             <th>عملیات</th>
         </tr>
     </thead>
@@ -29,6 +30,7 @@
         {
             <tr>
                 <td>@student.StudentName</td>
+                <td>@(student.Grade.HasValue ? student.Grade.ToString() : "ثبت نشده")</td>
                 <td>
                     <form asp-action="RemoveStudent" method="post" style="display:inline">
                         <input type="hidden" name="sectionId" value="@Model.Id" />
@@ -36,8 +38,10 @@
                         <button type="submit" class="btn btn-danger btn-sm" 
                                 onclick="return confirm('آیا مطمئن هستید که می‌خواهید این دانشجو را حذف کنید؟');">حذف</button>
                     </form>
+                    <a asp-action="UpdateGrade" asp-route-sectionId="@Model.Id" asp-route-studentId="@student.StudentId" class="btn btn-warning btn-sm">ویرایش نمره</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+

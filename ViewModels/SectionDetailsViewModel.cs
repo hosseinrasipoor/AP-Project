@@ -22,6 +22,8 @@
     {
         public int StudentId { get; set; }
         public string StudentName { get; set; }
+        public int? Grade { get; set; }  // nullable برای اینکه ممکنه نمره ثبت نشده باشه
     }
+
 
 }
