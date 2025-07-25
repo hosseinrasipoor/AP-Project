@@ -1,37 +1,52 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UniversityManager.Data;
+using Golestan.Areas.Identity.Data;
+using Microsoft.AspNetCore.Identity;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<GolestanContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+internal class Program
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+        IMvcBuilder mvcBuilder = builder.Services.AddControllersWithViews(); // اصلاح: AddControlUersWithViews → AddControllersWithViews
+
+        builder.Services.AddDbContext<GolestanContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // اصلاح: UsesqlServer → UseSqlServer
+
+        builder.Services.AddDefaultIdentity<SampleUser>(options => 
+{
+        options.SignIn.RequireConfirmedAccount = true;
+    
+    // Disable new user registrations
+        options.User.AllowedUserNameCharacters = ""; // Prevent new usernames
+        })
+        .AddEntityFrameworkStores<GolestanContext>();
+
+        var app = builder.Build(); // اصلاح کامل این خط
+
+        // Configure the HTTP request pipeline.
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Home/Error"); // اصلاح: UsesExceptionHandler → UseExceptionHandler
+            app.UseHsts(); // افزودن HSTS اجباری
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseAuthentication(); // افزودن احراز هویت
+        app.UseAuthorization();  // افزودن مجوزدهی
+
+        app.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapRazorPages(); // ضروری برای Identity
+
+        app.Run();
+    }
 }
-
-app.UseHttpsRedirection();
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
-
-app.Run();

@@ -17,8 +17,14 @@ html {
   min-height: 100%;
 }
 
+/* Turquoise background */
 body {
-  margin-bottom: 60px;
+    background-color: #40e0d0 !important; /* Classic turquoise */
+}
+
+/* Optional: Improve text contrast */
+.text-center, footer {
+    color: #333;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
