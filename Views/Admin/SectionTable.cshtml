@@ -1,0 +1,41 @@
+﻿@model List<Golestan.ViewModels.SectionTableViewModel>
+
+@{
+    ViewData["Title"] = "لیست سشن‌ها";
+    Layout = "_Layout"; // اطمینان از اینکه Layout اعمال می‌شود
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+<a class="btn btn-success mb-3" asp-action="CreateSection">+ Add Section</a>
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>درس</th>
+            <th>استاد</th>
+            <th>ترم</th>
+            <th>سال</th>
+            <th>کلاس</th>
+            <th>زمان</th>
+            <th>امتحان نهایی</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.CourseTitle</td>
+            <td>@s.InstructorName</td>
+            <td>@s.Semester</td>
+            <td>@s.Year </td>
+            <td>@s.ClassroomName</td>
+            <td>@s.TimeSlotInfo</td>
+            <td>@s.FinalExamDate.ToString("yyyy/MM/dd")</td>
+            <td>
+                <a asp-action="SectionDetails" asp-route-id="@s.Id" class="btn btn-sm btn-info">جزئیات</a>
+                <a asp-action="SectionDelete" asp-route-id="@s.Id" class="btn btn-sm btn-danger">حذف</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

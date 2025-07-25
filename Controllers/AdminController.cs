@@ -16,6 +16,34 @@ namespace Golestan.Controllers
             _context = context;
         }
 
+        private void FillDropDowns(CreateSectionViewModel model)
+        {
+            model.Courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Title
+            }).ToList();
+
+            model.Classrooms = _context.Classrooms.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Building + " " + c.RoomNumber
+            }).ToList();
+
+            model.TimeSlots = _context.TimeSlots.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = t.Day + " " + t.StartTime.ToString("HH:mm") + "-" + t.EndTime.ToString("HH:mm")
+            }).ToList();
+
+            model.Instructors = _context.Instructors.Include(i => i.User).Select(i => new SelectListItem
+            {
+                Value = i.InstructorId.ToString(),
+                Text = i.User.FirstName + " " + i.User.LastName
+            }).ToList();
+        }
+
+
         public IActionResult Index()
         {
             return View();
@@ -429,5 +457,198 @@ namespace Golestan.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("TimeSlotTable");
         }
+
+
+
+
+
+
+
+        [HttpGet]
+        public IActionResult CreateSection()
+        {
+            var model = new CreateSectionViewModel
+            {
+                Courses = _context.Courses
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Title
+                    }).ToList(),
+
+                Classrooms = _context.Classrooms
+                    .Select(cl => new SelectListItem
+                    {
+                        Value = cl.Id.ToString(),
+                        Text = $"{cl.Building} - {cl.RoomNumber}"
+                    }).ToList(),
+
+                TimeSlots = _context.TimeSlots
+                    .Select(ts => new SelectListItem
+                    {
+                        Value = ts.Id.ToString(),
+                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
+                    }).ToList(),
+
+                Instructors = _context.Instructors
+                    .Include(i => i.User)
+                    .Select(i => new SelectListItem
+                    {
+                        Value = i.InstructorId.ToString(),
+                        Text = $"{i.User.FirstName} {i.User.LastName}"
+                    }).ToList()
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CreateSection(CreateSectionViewModel model)
+        {
+            // اگر ModelState معتبر نیست، dropdownها رو دوباره پر کن
+            if (!ModelState.IsValid)
+            {
+                model.Courses = _context.Courses
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Title
+                    }).ToList();
+
+                model.Classrooms = _context.Classrooms
+                    .Select(cl => new SelectListItem
+                    {
+                        Value = cl.Id.ToString(),
+                        Text = $"{cl.Building} - {cl.RoomNumber}"
+                    }).ToList();
+
+                model.TimeSlots = _context.TimeSlots
+                    .Select(ts => new SelectListItem
+                    {
+                        Value = ts.Id.ToString(),
+                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
+                    }).ToList();
+
+                model.Instructors = _context.Instructors
+                    .Include(i => i.User)
+                    .Select(i => new SelectListItem
+                    {
+                        Value = i.InstructorId.ToString(),
+                        Text = $"{i.User.FirstName} {i.User.LastName}"
+                    }).ToList();
+
+                return View(model);
+            }
+
+            // بررسی تداخل زمانی برای کلاس و استاد
+            var conflictingClassroom = _context.Sections
+                .Any(s => s.ClassroomId == model.ClassroomId && s.TimeSlotId == model.TimeSlotId);
+
+            var conflictingInstructor = _context.Teaches
+                .Include(t => t.Section)
+                .Any(t => t.InstructorId == model.InstructorId && t.Section.TimeSlotId == model.TimeSlotId);
+
+            if (conflictingClassroom)
+                ModelState.AddModelError("ClassroomId", "کلاس انتخاب‌شده در این بازه زمانی قبلاً استفاده شده است.");
+
+            if (conflictingInstructor)
+                ModelState.AddModelError("InstructorId", "استاد انتخاب‌شده در این بازه زمانی قبلاً مشغول تدریس است.");
+
+            if (!ModelState.IsValid)
+            {
+                // اگر خطای تداخل داشت، dropdownها رو دوباره پر کن
+                model.Courses = _context.Courses
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Title
+                    }).ToList();
+
+                model.Classrooms = _context.Classrooms
+                    .Select(cl => new SelectListItem
+                    {
+                        Value = cl.Id.ToString(),
+                        Text = $"{cl.Building} - {cl.RoomNumber}"
+                    }).ToList();
+
+                model.TimeSlots = _context.TimeSlots
+                    .Select(ts => new SelectListItem
+                    {
+                        Value = ts.Id.ToString(),
+                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
+                    }).ToList();
+
+                model.Instructors = _context.Instructors
+                    .Include(i => i.User)
+                    .Select(i => new SelectListItem
+                    {
+                        Value = i.InstructorId.ToString(),
+                        Text = $"{i.User.FirstName} {i.User.LastName}"
+                    }).ToList();
+
+                return View(model);
+            }
+
+            // ساخت Section
+            var newSection = new Section
+            {
+                CourseId = model.CourseId,
+                ClassroomId = model.ClassroomId,
+                TimeSlotId = model.TimeSlotId,
+                Year = model.Year,
+                Semester = model.Semester,
+                FinalExamDate = model.FinalExamDate
+            };
+
+            _context.Sections.Add(newSection);
+            _context.SaveChanges();
+
+            // ساخت رکورد Teach برای استاد
+            var teach = new Teach
+            {
+                SectionId = newSection.Id,
+                InstructorId = model.InstructorId
+            };
+
+            _context.Teaches.Add(teach);
+            _context.SaveChanges();
+
+            return RedirectToAction("SectionTable");
+        }
+
+
+
+
+
+        public IActionResult SectionTable()
+        {
+            var sections = _context.Sections
+                .Include(s => s.Course)
+                .Include(s => s.Classroom)
+                .Include(s => s.TimeSlot)
+                .Include(s => s.Teach)
+                    .ThenInclude(t => t.Instructor)
+                        .ThenInclude(i => i.User)
+                .Select(s => new SectionTableViewModel
+                {
+                    Id = s.Id,
+                    CourseTitle = s.Course.Title,
+                    InstructorName = s.Teach != null
+                        ? $"{s.Teach.Instructor.User.FirstName} {s.Teach.Instructor.User.LastName}"
+                        : "نامشخص",
+                    Year = s.Year,
+                    Semester = s.Semester,
+                    ClassroomName = $"{s.Classroom.Building} - {s.Classroom.RoomNumber}",
+                    TimeSlotInfo = $"{s.TimeSlot.Day} {s.TimeSlot.StartTime:hh\\:mm} - {s.TimeSlot.EndTime:hh\\:mm}",
+                    FinalExamDate = s.FinalExamDate
+                })
+                .ToList();
+
+            return View(sections);
+        }
+
+
     }
 }
