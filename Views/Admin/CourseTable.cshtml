@@ -1,0 +1,38 @@
+﻿@model List<Course>
+@{
+    ViewData["Title"] = "Courses";
+}
+
+<h2>Course List</h2>
+<a class="btn btn-success mb-3" asp-action="CreateCourse">+ Add Course</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Title</th>
+            <th>Code</th>
+            <th>Unit</th>
+            <th>Description</th>
+            <th>Final Exam</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td>@course.Id</td>
+                <td>@course.Title</td>
+                <td>@course.Code</td>
+                <td>@course.Unit</td>
+                <td>@course.Description</td>
+                <td>@course.FinalExamDate.ToShortDateString()</td>
+                <td>
+                    <form asp-action="DeleteCourse" method="post" asp-route-id="@course.Id" onsubmit="return confirm('Are you sure?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -12,7 +12,7 @@ using UniversityManager.Data;
 namespace Golestan.Migrations
 {
     [DbContext(typeof(GolestanContext))]
-    [Migration("20250722145256_InitialCreate")]
+    [Migration("20250723134522_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -123,7 +123,7 @@ namespace Golestan.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Golestan.Models.Section", b =>
@@ -295,14 +295,9 @@ namespace Golestan.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoleId1")
-                        .HasColumnType("int");
-
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("RoleId1");
 
                     b.ToTable("UserRoles");
                 });
@@ -405,14 +400,10 @@ namespace Golestan.Migrations
             modelBuilder.Entity("Golestan.Models.UserRole", b =>
                 {
                     b.HasOne("Golestan.Models.Role", "Role")
-                        .WithMany()
+                        .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Golestan.Models.Role", null)
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId1");
 
                     b.HasOne("Golestan.Models.User", "User")
                         .WithMany("UserRoles")

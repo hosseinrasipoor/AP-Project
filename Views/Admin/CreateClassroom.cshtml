@@ -1,0 +1,19 @@
+﻿@model Classroom
+
+<h2>Create New Classroom</h2>
+
+<form asp-action="CreateClassroom" method="post">
+    <div class="form-group">
+        <label>Building</label>
+        <input asp-for="Building" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Room Number</label>
+        <input asp-for="RoomNumber" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Capacity</label>
+        <input asp-for="Capacity" type="number" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Create</button>
+</form>

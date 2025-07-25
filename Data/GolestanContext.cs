@@ -10,6 +10,7 @@ namespace UniversityManager.Data
             : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Instructor> Instructors { get; set; }
@@ -49,7 +50,7 @@ namespace UniversityManager.Data
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Role)
-                .WithMany()
+                .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId);
 
             // Takes

@@ -1,0 +1,33 @@
+﻿@model List<Classroom>
+
+<h2>Classroom List</h2>
+
+<a class="btn btn-success mb-3" asp-action="CreateClassroom">+ Add Classroom</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Building</th>
+            <th>Room Number</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.Building</td>
+                <td>@c.RoomNumber</td>
+                <td>@c.Capacity</td>
+                <td>
+                    <form asp-action="DeleteClassroom" method="post" asp-route-id="@c.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

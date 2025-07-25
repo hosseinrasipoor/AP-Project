@@ -1,0 +1,47 @@
+﻿@model Golestan.ViewModels.SectionDetailsViewModel
+
+<h2>جزئیات سشن</h2>
+
+<div>
+    <h4>@Model.CourseTitle (سال: @Model.Year - ترم: @Model.Semester)</h4>
+    <p>کلاس: @Model.ClassroomName</p>
+    <p>زمان: @Model.TimeSlotInfo</p>
+    <p>امتحان نهایی: @Model.FinalExamDate.ToString("yyyy/MM/dd")</p>
+    <p>استاد: @(string.IsNullOrEmpty(Model.InstructorName) ? "استاد ندارد" : Model.InstructorName)</p>
+</div>
+
+<div>
+    <a asp-action="ChangeInstructor" asp-route-id="@Model.Id" class="btn btn-primary">تغییر استاد</a>
+    <a asp-action="AddStudentToSection" asp-route-sectionId="@Model.Id" class="btn btn-success">افزودن دانشجو</a>
+
+</div>
+
+<h3>لیست دانشجویان</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>نام دانشجو</th>
+            <th>نمره</th>  <!-- اضافه شده -->
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.StudentName</td>
+                <td>@(student.Grade.HasValue ? student.Grade.ToString() : "ثبت نشده")</td>
+                <td>
+                    <form asp-action="RemoveStudent" method="post" style="display:inline">
+                        <input type="hidden" name="sectionId" value="@Model.Id" />
+                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                        <button type="submit" class="btn btn-danger btn-sm" 
+                                onclick="return confirm('آیا مطمئن هستید که می‌خواهید این دانشجو را حذف کنید؟');">حذف</button>
+                    </form>
+                    <a asp-action="UpdateGrade" asp-route-sectionId="@Model.Id" asp-route-studentId="@student.StudentId" class="btn btn-warning btn-sm">ویرایش نمره</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
