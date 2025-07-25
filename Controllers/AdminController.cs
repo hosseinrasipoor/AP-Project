@@ -16,6 +16,25 @@ namespace Golestan.Controllers
             _context = context;
         }
 
+
+        private async Task AssignRoleToUserAsync(int userId, RoleType role)
+        {
+            bool alreadyHasRole = await _context.UserRoles
+                .AnyAsync(ur => ur.UserId == userId && ur.RoleId == (int)role);
+
+            if (!alreadyHasRole)
+            {
+                _context.UserRoles.Add(new UserRole
+                {
+                    UserId = userId,
+                    RoleId = (int)role
+                });
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
         private void FillDropDowns(CreateSectionViewModel model)
         {
             model.Courses = _context.Courses.Select(c => new SelectListItem
@@ -75,6 +94,7 @@ namespace Golestan.Controllers
                 Email = model.Email,
                 HashedPassword = model.Password,
                 CreatedAt = DateTime.Now,
+
             };
 
             _context.Users.Add(user);
@@ -144,7 +164,7 @@ namespace Golestan.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateStudent(CreateStudentViewModel model)
+        public async Task<IActionResult> CreateStudent(CreateStudentViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -162,31 +182,61 @@ namespace Golestan.Controllers
             {
                 UserId = model.UserId,
                 EnrollmentDate = model.EnrollmentDate
+                
             };
-
+            await AssignRoleToUserAsync(model.UserId, RoleType.Student);
             _context.Students.Add(student);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
+
 
             return RedirectToAction("StudentTable");
         }
 
+        
         [HttpPost]
         public async Task<IActionResult> DeleteStudent(int id)
         {
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == id);
+            var student = await _context.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.StudentId == id);
+
             if (student == null)
                 return NotFound();
 
+            // حذف ارتباط‌های Take
             var takes = _context.Takes.Where(t => t.StudentId == id);
-
             _context.Takes.RemoveRange(takes);
 
+            // حذف خود دانشجو
             _context.Students.Remove(student);
 
             await _context.SaveChangesAsync();
 
+            // بررسی اینکه آیا دانشجوی دیگه‌ای با این یوزر وجود دارد
+            bool hasOtherStudentProfiles = await _context.Students
+                .AnyAsync(s => s.UserId == student.UserId && s.StudentId != id);
+
+            if (!hasOtherStudentProfiles)
+            {
+                // پیدا کردن RoleId مربوط به Student
+                var studentRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Student);
+                if (studentRole != null)
+                {
+                    var userRole = await _context.UserRoles
+                        .FirstOrDefaultAsync(ur => ur.UserId == student.UserId && ur.RoleId == studentRole.Id);
+
+                    if (userRole != null)
+                    {
+                        _context.UserRoles.Remove(userRole);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             return RedirectToAction("StudentTable");
         }
+
 
 
         [HttpGet]
@@ -203,7 +253,7 @@ namespace Golestan.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateInstructor(CreateInstructorViewModel model)
+        public async Task<IActionResult> CreateInstructor(CreateInstructorViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -223,9 +273,9 @@ namespace Golestan.Controllers
                 Salary = model.Salary,
                 HireDate = model.HireDate
             };
-
+            await AssignRoleToUserAsync(model.UserId, RoleType.Instructor);
             _context.Instructors.Add(instructor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("InstructorTable");
 
@@ -250,21 +300,46 @@ namespace Golestan.Controllers
 
         public async Task<IActionResult> DeleteInstructor(int id)
         {
-            var instructor = await _context.Instructors.FirstOrDefaultAsync(i => i.InstructorId == id);
+            var instructor = await _context.Instructors
+                .Include(i => i.User)
+                .FirstOrDefaultAsync(i => i.InstructorId == id);
+
             if (instructor == null)
                 return NotFound();
 
-
+            // حذف همه درس‌هایی که این استاد تدریس می‌کرد
             var teaches = _context.Teaches.Where(t => t.InstructorId == id);
-
             _context.Teaches.RemoveRange(teaches);
 
+            // حذف خود استاد
             _context.Instructors.Remove(instructor);
 
             await _context.SaveChangesAsync();
 
+            // بررسی اینکه آیا استاد دیگری برای این کاربر وجود دارد
+            bool hasOtherInstructorProfiles = await _context.Instructors
+                .AnyAsync(i => i.UserId == instructor.UserId && i.InstructorId != id);
+
+            if (!hasOtherInstructorProfiles)
+            {
+                // گرفتن Role مربوط به Instructor
+                var instructorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Instructor);
+                if (instructorRole != null)
+                {
+                    var userRole = await _context.UserRoles
+                        .FirstOrDefaultAsync(ur => ur.UserId == instructor.UserId && ur.RoleId == instructorRole.Id);
+
+                    if (userRole != null)
+                    {
+                        _context.UserRoles.Remove(userRole);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             return RedirectToAction("InstructorTable");
         }
+
 
 
 
