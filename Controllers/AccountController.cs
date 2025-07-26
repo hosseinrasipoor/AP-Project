@@ -80,22 +80,7 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            int totalProfiles = (user.StudentProfiles?.Count ?? 0) + (user.InstructorProfiles?.Count ?? 0);
-
-            // فقط یک نقش-پروفایل داره → مستقیم لاگین شه
-            if (totalProfiles == 1)
-            {
-                if (user.StudentProfiles?.Count == 1)
-                {
-                    return await LoginWithProfile(user, RoleType.Student, user.StudentProfiles.First().StudentId);
-                }
-                else
-                {
-                    return await LoginWithProfile(user, RoleType.Instructor, user.InstructorProfiles.First().InstructorId);
-                }
-            }
-
-            // چند نقش داره → بفرستش انتخاب نقش
+            
             var roleOptions = new List<RoleSelectionViewModel>();
 
             if (user.StudentProfiles != null)
