@@ -1,22 +1,50 @@
 ﻿@model Golestan.ViewModels.Account.LoginViewModel
 
-<h2>ورود به سامانه</h2>
+<style>
+    .login-container {
+        height: 100vh; /* تمام ارتفاع صفحه */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #40E0D0; /* پس‌زمینه فیروزه‌ای */
+    }
 
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+    .login-box {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-box h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-box">
+        <h2>Login page</h2>
+
+        <form asp-action="Login" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
     </div>
-
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" type="password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">ورود</button>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
