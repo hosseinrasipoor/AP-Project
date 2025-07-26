@@ -18,7 +18,6 @@ namespace Golestan.Controllers
             _context = context;
         }
 
-        // گرفتن آی‌دی دانشجو لاگین شده از کوکی
         private async Task<int?> GetCurrentStudentIdAsync()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -34,7 +33,7 @@ namespace Golestan.Controllers
             return student?.StudentId;
         }
 
-        // صفحه داشبورد دانشجو
+        
         public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

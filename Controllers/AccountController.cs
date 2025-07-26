@@ -113,7 +113,7 @@ namespace Golestan.Controllers
             {
                 roleOptions.Add(new RoleSelectionViewModel
                 {
-                    ProfileId = 0, // یا هر مقدار مناسبی که تو سیستم تعریف کردی
+                    ProfileId = 0,
                     Role = RoleType.Admin,
                     DisplayName = $"ادمین - {user.FirstName} {user.LastName}"
                 });
