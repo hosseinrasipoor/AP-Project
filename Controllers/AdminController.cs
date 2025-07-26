@@ -362,8 +362,7 @@ namespace Golestan.Controllers
                 Title = model.Title,
                 Code = model.Code,
                 Unit = model.Unit,
-                Description = model.Description,
-                FinalExamDate = model.FinalExamDate
+                Description = model.Description
             };
 
             _context.Courses.Add(course);
@@ -573,7 +572,8 @@ namespace Golestan.Controllers
                     {
                         Value = i.InstructorId.ToString(),
                         Text = $"{i.User.FirstName} {i.User.LastName}"
-                    }).ToList()
+                    }).ToList(),
+                    FinalExamDate = DateTime.Today
             };
 
             return View(model);

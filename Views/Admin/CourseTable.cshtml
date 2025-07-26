@@ -13,7 +13,7 @@
             <th>Code</th>
             <th>Unit</th>
             <th>Description</th>
-            <th>Final Exam</th>
+            
             <th>Actions</th>
         </tr>
     </thead>
@@ -26,7 +26,7 @@
                 <td>@course.Code</td>
                 <td>@course.Unit</td>
                 <td>@course.Description</td>
-                <td>@course.FinalExamDate.ToShortDateString()</td>
+                
                 <td>
                     <form asp-action="DeleteCourse" method="post" asp-route-id="@course.Id" onsubmit="return confirm('Are you sure?');">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>

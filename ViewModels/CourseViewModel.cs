@@ -16,8 +16,8 @@ namespace Golestan.ViewModels
         [MaxLength(50)]
         public string Description { get; set; }
 
-        [DataType(DataType.Date)]
-        public DateTime FinalExamDate { get; set; }
+       
+        
     }
 
 }
