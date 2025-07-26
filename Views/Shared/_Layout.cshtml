@@ -2,6 +2,17 @@
 @{
     var isAuthenticated = User.Identity.IsAuthenticated;
     var fullName = User.FindFirst(ClaimTypes.Name)?.Value;
+
+    string dashboardController = "";
+    if (isAuthenticated)
+    {
+        if (User.IsInRole("Student"))
+            dashboardController = "Student";
+        else if (User.IsInRole("Instructor"))
+            dashboardController = "Instructor";
+        else if (User.IsInRole("Admin"))
+            dashboardController = "Admin";
+    }
 }
 
 <!DOCTYPE html>
@@ -25,17 +36,15 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                        @* دکمه‌های هوم و پرایوسی حذف شدند *@
                     </ul>
 
                     <ul class="navbar-nav">
                         @if (isAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="@dashboardController" asp-action="Index">داشبورد</a>
+                            </li>
                             <li class="nav-item">
                                 <span class="nav-link text-dark">سلام، @fullName!</span>
                             </li>
@@ -65,7 +74,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - Golestan - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - Golestan
         </div>
     </footer>
 

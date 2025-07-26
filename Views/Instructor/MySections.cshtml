@@ -1,0 +1,36 @@
+﻿@model List<Golestan.ViewModels.SectionTableViewModel>
+@{
+    ViewData["Title"] = "سشن‌های من";
+}
+
+<h2 class="mb-4">سشن‌های من</h2>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-primary">
+        <tr>
+            <th>درس</th>
+            <th>سال</th>
+            <th>ترم</th>
+            <th>کلاس</th>
+            <th>زمان</th>
+            <th>تاریخ امتحان</th>
+            <th>جزئیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.CourseTitle</td>
+                <td>@s.Year</td>
+                <td>@s.Semester</td>
+                <td>@s.ClassroomName</td>
+                <td>@s.TimeSlotInfo</td>
+                <td>@(s.FinalExamDate.ToString("yyyy/MM/dd") ?? "-")</td>
+                <td>
+                    <a class="btn btn-sm btn-info" href="@Url.Action("SectionDetails", "Instructor", new { id = s.Id })">مشاهده</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

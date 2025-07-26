@@ -1,0 +1,43 @@
+﻿@model Golestan.ViewModels.SectionDetailsViewModel
+@{
+    ViewData["Title"] = "جزئیات سشن";
+}
+
+<h2 class="mb-3">جزئیات سشن: @Model.CourseTitle</h2>
+
+<div class="mb-3">
+    <strong>استاد:</strong> @Model.InstructorName <br />
+    <strong>کلاس:</strong> @Model.ClassroomName <br />
+    <strong>زمان:</strong> @Model.TimeSlotInfo <br />
+    <strong>ترم:</strong> @Model.Year - ترم @Model.Semester <br />
+    <strong>تاریخ امتحان:</strong> @(Model.FinalExamDate.ToString("yyyy/MM/dd") ?? "-")
+</div>
+
+<h4 class="mt-4">دانشجویان ثبت‌نام‌شده</h4>
+
+<table class="table table-bordered">
+    <thead class="table-secondary">
+        <tr>
+            <th>نام دانشجو</th>
+            <th>نمره</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.StudentName</td>
+                <td>@(student.Grade?.ToString() ?? "-")</td>
+                <td>
+                    <a class="btn btn-sm btn-warning" href="@Url.Action("UpdateGrade", "Instructor", new { sectionId = Model.Id, studentId = student.StudentId })">ویرایش نمره</a>
+                    <form method="post" asp-action="RemoveStudent" asp-controller="Instructor" class="d-inline">
+                        <input type="hidden" name="sectionId" value="@Model.Id" />
+                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('آیا مطمئن هستید؟')">حذف</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

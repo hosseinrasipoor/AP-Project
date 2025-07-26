@@ -1,8 +1,102 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "داشبورد مدیریت";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">Error : ViewBag.ErrorMessage</a>.</p>
+<h2 class="mb-4">داشبورد مدیریت سامانه</h2>
+
+<div class="container">
+    <div class="row">
+
+        <!-- مدیریت کاربران -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">
+                    👥 مدیریت کاربران
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateUser", "Admin")" class="btn btn-primary w-100 mb-2">➕ ساخت کاربر جدید</a>
+                    <a href="@Url.Action("UserTable", "Admin")" class="btn btn-primary w-100">📋 لیست کاربران</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- دانشجویان -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white">
+                    🎓 مدیریت دانشجویان
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateStudent", "Admin")" class="btn btn-success w-100 mb-2">➕ افزودن دانشجو</a>
+                    <a href="@Url.Action("StudentTable", "Admin")" class="btn btn-success w-100">📋 لیست دانشجویان</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- اساتید -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning h-100">
+                <div class="card-header bg-warning text-dark">
+                    🧑‍🏫 مدیریت اساتید
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateInstructor", "Admin")" class="btn btn-warning text-dark w-100 mb-2">➕ افزودن استاد</a>
+                    <a href="@Url.Action("InstructorTable", "Admin")" class="btn btn-warning text-dark w-100">📋 لیست اساتید</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- دروس -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-info h-100">
+                <div class="card-header bg-info text-white">
+                    📚 مدیریت دروس
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateCourse", "Admin")" class="btn btn-info w-100 mb-2">➕ افزودن درس</a>
+                    <a href="@Url.Action("CourseTable", "Admin")" class="btn btn-info w-100">📋 لیست دروس</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- کلاس‌ها -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-secondary h-100">
+                <div class="card-header bg-secondary text-white">
+                    🏫 مدیریت کلاس‌ها
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateClassroom", "Admin")" class="btn btn-secondary w-100 mb-2">➕ افزودن کلاس</a>
+                    <a href="@Url.Action("ClassroomTable", "Admin")" class="btn btn-secondary w-100">📋 لیست کلاس‌ها</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- بازه‌های زمانی -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-dark h-100">
+                <div class="card-header bg-dark text-white">
+                    🕒 مدیریت بازه‌های زمانی
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateTimeSlot", "Admin")" class="btn btn-dark w-100 mb-2">➕ افزودن تایم‌اسلات</a>
+                    <a href="@Url.Action("TimeSlotTable", "Admin")" class="btn btn-dark w-100">📋 لیست تایم‌اسلات‌ها</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- سشن‌ها -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-danger text-white">
+                    📅 مدیریت سشن‌ها
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("CreateSection", "Admin")" class="btn btn-danger w-100 mb-2">➕ ساخت سشن</a>
+                    <a href="@Url.Action("SectionTable", "Admin")" class="btn btn-danger w-100">📋 لیست سشن‌ها</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
