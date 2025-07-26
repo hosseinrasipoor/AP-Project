@@ -571,7 +571,7 @@ namespace Golestan.Controllers
                     .Select(i => new SelectListItem
                     {
                         Value = i.InstructorId.ToString(),
-                        Text = $"{i.User.FirstName} {i.User.LastName}"
+                        Text = $"{i.User.FirstName} {i.User.LastName} {i.InstructorId}"
                     }).ToList(),
                     FinalExamDate = DateTime.Today
             };
@@ -619,13 +619,45 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-           
+
+            var selectedTimeSlot = _context.TimeSlots.FirstOrDefault(ts => ts.Id == model.TimeSlotId);
+
             var conflictingClassroom = _context.Sections
-                .Any(s => s.ClassroomId == model.ClassroomId && s.TimeSlotId == model.TimeSlotId);
+                .Include(s => s.TimeSlot)
+                .Any(s =>
+                    s.ClassroomId == model.ClassroomId &&
+                    s.Year == model.Year &&
+                    s.Semester == model.Semester &&
+                    s.TimeSlot.Day == selectedTimeSlot.Day &&
+                    s.TimeSlot.StartTime < selectedTimeSlot.EndTime &&
+                    selectedTimeSlot.StartTime < s.TimeSlot.EndTime
+                );
+
+
+
 
             var conflictingInstructor = _context.Teaches
                 .Include(t => t.Section)
-                .Any(t => t.InstructorId == model.InstructorId && t.Section.TimeSlotId == model.TimeSlotId);
+                .ThenInclude(s => s.TimeSlot)
+                .Any(t =>
+                    t.InstructorId == model.InstructorId &&
+                    t.Section.Year == model.Year &&
+                    t.Section.Semester == model.Semester &&
+                    (
+                        t.Section.TimeSlot.Day == selectedTimeSlot.Day &&
+                        (
+                            (t.Section.TimeSlot.StartTime < selectedTimeSlot.EndTime) &&
+                            (selectedTimeSlot.StartTime < t.Section.TimeSlot.EndTime)
+                        )
+                    )
+                );
+                /*||
+                _context.Teaches
+                .Include(t => t.Section)
+                .ThenInclude(s => s.TimeSlot)
+                .Any(t => t.Section.TimeSlotId == model.TimeSlotId);*/
+
+
 
             if (conflictingClassroom)
                 ModelState.AddModelError("ClassroomId", "کلاس انتخاب‌شده در این بازه زمانی قبلاً استفاده شده است.");
