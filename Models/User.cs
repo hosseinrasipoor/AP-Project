@@ -25,7 +25,7 @@ namespace Golestan.Models
         [Required , MaxLength(50)]
         public string HashedPassword { get; set; }
 
-        // روابط
+       
         public ICollection<UserRole>? UserRoles { get; set; }
         public ICollection<Student>? StudentProfiles { get; set; }
         public ICollection<Instructor>? InstructorProfiles { get; set; }

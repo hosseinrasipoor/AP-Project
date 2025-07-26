@@ -206,22 +206,22 @@ namespace Golestan.Controllers
             if (student == null)
                 return NotFound();
 
-            // حذف ارتباط‌های Take
+            
             var takes = _context.Takes.Where(t => t.StudentId == id);
             _context.Takes.RemoveRange(takes);
 
-            // حذف خود دانشجو
+            
             _context.Students.Remove(student);
 
             await _context.SaveChangesAsync();
 
-            // بررسی اینکه آیا دانشجوی دیگه‌ای با این یوزر وجود دارد
+            
             bool hasOtherStudentProfiles = await _context.Students
                 .AnyAsync(s => s.UserId == student.UserId && s.StudentId != id);
 
             if (!hasOtherStudentProfiles)
             {
-                // پیدا کردن RoleId مربوط به Student
+                
                 var studentRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Student);
                 if (studentRole != null)
                 {
@@ -309,22 +309,22 @@ namespace Golestan.Controllers
             if (instructor == null)
                 return NotFound();
 
-            // حذف همه درس‌هایی که این استاد تدریس می‌کرد
+            
             var teaches = _context.Teaches.Where(t => t.InstructorId == id);
             _context.Teaches.RemoveRange(teaches);
 
-            // حذف خود استاد
+           
             _context.Instructors.Remove(instructor);
 
             await _context.SaveChangesAsync();
 
-            // بررسی اینکه آیا استاد دیگری برای این کاربر وجود دارد
+            
             bool hasOtherInstructorProfiles = await _context.Instructors
                 .AnyAsync(i => i.UserId == instructor.UserId && i.InstructorId != id);
 
             if (!hasOtherInstructorProfiles)
             {
-                // گرفتن Role مربوط به Instructor
+                
                 var instructorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Instructor);
                 if (instructorRole != null)
                 {
@@ -362,8 +362,7 @@ namespace Golestan.Controllers
                 Title = model.Title,
                 Code = model.Code,
                 Unit = model.Unit,
-                Description = model.Description,
-                FinalExamDate = model.FinalExamDate
+                Description = model.Description
             };
 
             _context.Courses.Add(course);
@@ -573,7 +572,8 @@ namespace Golestan.Controllers
                     {
                         Value = i.InstructorId.ToString(),
                         Text = $"{i.User.FirstName} {i.User.LastName}"
-                    }).ToList()
+                    }).ToList(),
+                    FinalExamDate = DateTime.Today
             };
 
             return View(model);
@@ -584,7 +584,7 @@ namespace Golestan.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult CreateSection(CreateSectionViewModel model)
         {
-            // اگر ModelState معتبر نیست، dropdownها رو دوباره پر کن
+            
             if (!ModelState.IsValid)
             {
                 model.Courses = _context.Courses
@@ -619,7 +619,7 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            // بررسی تداخل زمانی برای کلاس و استاد
+           
             var conflictingClassroom = _context.Sections
                 .Any(s => s.ClassroomId == model.ClassroomId && s.TimeSlotId == model.TimeSlotId);
 
@@ -635,7 +635,7 @@ namespace Golestan.Controllers
 
             if (!ModelState.IsValid)
             {
-                // اگر خطای تداخل داشت، dropdownها رو دوباره پر کن
+                
                 model.Courses = _context.Courses
                     .Select(c => new SelectListItem
                     {
@@ -668,7 +668,7 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            // ساخت Section
+            
             var newSection = new Section
             {
                 CourseId = model.CourseId,
@@ -682,7 +682,7 @@ namespace Golestan.Controllers
             _context.Sections.Add(newSection);
             _context.SaveChanges();
 
-            // ساخت رکورد Teach برای استاد
+            
             var teach = new Teach
             {
                 SectionId = newSection.Id,
@@ -873,14 +873,14 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            // اگر Teach قبلی وجود دارد، حذفش کن
+            
             if (section.Teach != null)
             {
                 _context.Teaches.Remove(section.Teach);
-                await _context.SaveChangesAsync(); // مهم: باید قبل از افزودن جدید ذخیره کنیم
+                await _context.SaveChangesAsync();
             }
 
-            // ایجاد Teach جدید
+            
             var newTeach = new Teach
             {
                 SectionId = section.Id,
@@ -906,7 +906,7 @@ namespace Golestan.Controllers
 
             int timeSlotId = section.TimeSlotId;
 
-            // دانشجوهایی که در این تایم‌اسلات در کلاس دیگه‌ای نیستند
+            
             var busyStudentIds = await _context.Takes
                 .Where(t => t.Section.TimeSlotId == timeSlotId)
                 .Select(t => t.StudentId)
@@ -958,7 +958,7 @@ namespace Golestan.Controllers
 
             int timeSlotId = section.TimeSlotId;
 
-            // بررسی تداخل زمانی
+            
             bool isBusy = await _context.Takes
                 .AnyAsync(t => t.StudentId == model.SelectedStudentId && t.Section.TimeSlotId == timeSlotId);
 
@@ -977,7 +977,7 @@ namespace Golestan.Controllers
                 return View(model);
             }
 
-            // بررسی اینکه قبلاً اضافه نشده باشه
+            
             bool alreadyExists = await _context.Takes
                 .AnyAsync(t => t.SectionId == model.SectionId && t.StudentId == model.SelectedStudentId);
 
@@ -1000,7 +1000,7 @@ namespace Golestan.Controllers
             return RedirectToAction("SectionDetails", new { id = model.SectionId });
         }
 
-        // نمایش فرم ویرایش نمره برای یک دانشجو در یک سشن
+        
         [HttpGet]
         public async Task<IActionResult> UpdateGrade(int sectionId, int studentId)
         {
@@ -1032,7 +1032,7 @@ namespace Golestan.Controllers
                 {
                     Console.WriteLine("Validation Error: " + error.ErrorMessage);
                 }
-                // وقتی خطا داریم، نام دانشجو رو از دیتابیس دوباره بگیریم
+                
                 var student = await _context.Students
                     .Include(s => s.User)
                     .FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
@@ -1057,7 +1057,7 @@ namespace Golestan.Controllers
         [HttpPost]
         public async Task<IActionResult> RemoveStudent(int sectionId, int studentId)
         {
-            // پیدا کردن رکورد Take مربوط به این دانشجو و سشن
+            
             var take = await _context.Takes
                 .FirstOrDefaultAsync(t => t.SectionId == sectionId && t.StudentId == studentId);
 

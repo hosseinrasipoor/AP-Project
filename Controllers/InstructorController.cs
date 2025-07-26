@@ -24,9 +24,6 @@ namespace Golestan.Controllers
         }
 
 
-        // گرفتن آی‌دی استاد لاگین شده
-        
-
         private async Task<int?> GetCurrentInstructorIdAsync()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -42,7 +39,7 @@ namespace Golestan.Controllers
             return instructor?.InstructorId;
         }
 
-        // اکشن برای نمایش سشن‌های استاد
+        
         public async Task<IActionResult> MySections()
         {
             int? instructorId = await GetCurrentInstructorIdAsync();
@@ -71,7 +68,7 @@ namespace Golestan.Controllers
             return View(sections);
         }
 
-        // نمایش جزئیات یک سشن
+        
         public async Task<IActionResult> SectionDetails(int id)
         {
             int? instructorId = await GetCurrentInstructorIdAsync();
@@ -116,7 +113,7 @@ namespace Golestan.Controllers
             return View(model);
         }
 
-        // حذف دانشجو از سشن
+        
         [HttpPost]
         public async Task<IActionResult> RemoveStudent(int sectionId, int studentId)
         {
@@ -142,7 +139,7 @@ namespace Golestan.Controllers
             return RedirectToAction("SectionDetails", new { id = sectionId });
         }
 
-        // نمایش فرم ویرایش نمره
+        
         [HttpGet]
         public async Task<IActionResult> UpdateGrade(int sectionId, int studentId)
         {
@@ -175,7 +172,7 @@ namespace Golestan.Controllers
             return View(model);
         }
 
-        // ثبت نمره
+        
         [HttpPost]
         public async Task<IActionResult> UpdateGrade(UpdateGradeViewModel model)
         {
