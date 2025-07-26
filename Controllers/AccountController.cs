@@ -66,13 +66,13 @@ namespace Golestan.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            User? 
-                 user1 = await _context.Users
+            User 
+                 user = await _context.Users
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(u => u.StudentProfiles)
                 .Include(u => u.InstructorProfiles)
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
-            var user = user1;
+            
 
             if (user == null || user.HashedPassword != model.Password)
             {
