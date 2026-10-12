@@ -18,7 +18,6 @@ namespace Golestan.Controllers
             _context = context;
         }
 
-
         private async Task AssignRoleToUserAsync(int userId, RoleType role)
         {
             bool alreadyHasRole = await _context.UserRoles
@@ -36,83 +35,89 @@ namespace Golestan.Controllers
             }
         }
 
-
         private void FillDropDowns(CreateSectionViewModel model)
         {
             model.Courses = _context.Courses.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
-                Text = c.Title
+                Text = $"{c.Title} ({c.Code})"
             }).ToList();
 
             model.Classrooms = _context.Classrooms.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
-                Text = c.Building + " " + c.RoomNumber
+                Text = $"{c.Building} - اتاق {c.RoomNumber} (ظرفیت: {c.Capacity})"
             }).ToList();
 
-            model.TimeSlots = _context.TimeSlots.Select(t => new SelectListItem
+            model.TimeSlots.Clear();
+            var slots = _context.TimeSlots.ToList();
+            model.TimeSlots = slots.Select(t => new SelectListItem
             {
                 Value = t.Id.ToString(),
-                Text = t.Day + " " + t.StartTime.ToString("HH:mm") + "-" + t.EndTime.ToString("HH:mm")
+                Text = $"{t.Day} ({t.StartTime:HH\\:mm} تا {t.EndTime:HH\\:mm})"
             }).ToList();
 
             model.Instructors = _context.Instructors.Include(i => i.User).Select(i => new SelectListItem
             {
                 Value = i.InstructorId.ToString(),
-                Text = i.User.FirstName + " " + i.User.LastName
+                Text = $"{i.User.FirstName} {i.User.LastName}"
             }).ToList();
         }
-
 
         public IActionResult Index()
         {
             return View();
         }
 
+        // ==================== USER MANAGEMENT ====================
+
+        [HttpGet]
         public IActionResult CreateUser()
         {
             return View();
         }
 
-
-
         [HttpPost]
-        public IActionResult CreateUser(CreateUserViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(CreateUserViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            if (_context.Users.Any(u => u.Email == model.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
             {
-                ModelState.AddModelError("Email", "A user with this email already exists.");
+                ModelState.AddModelError("Email", "کاربری با این نشانی ایمیل قبلاً در سامانه ثبت شده است.");
                 return View(model);
             }
 
             var user = new User
             {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
+                FirstName = model.FirstName.Trim(),
+                LastName = model.LastName.Trim(),
+                Email = model.Email.Trim().ToLower(),
                 HashedPassword = model.Password,
-                CreatedAt = DateTime.Now,
-
+                CreatedAt = DateTime.Now
             };
 
             _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("UserTable");
         }
 
-        public IActionResult UserTable()
+        public async Task<IActionResult> UserTable()
         {
-            var users = _context.Users.Include(users => users.UserRoles).ThenInclude(userRole => userRole.Role).ToList();
-            return View(users);
+            var users = await _context.Users
+                .Include(u => u.UserRoles)!
+                    .ThenInclude(ur => ur.Role)
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
 
+            return View(users);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users
@@ -124,20 +129,44 @@ namespace Golestan.Controllers
             if (user == null)
                 return NotFound();
 
+            // 1. Remove Takes of student profiles belonging to this user
+            var studentIds = user.StudentProfiles?.Select(s => s.StudentId).ToList() ?? new List<int>();
+            if (studentIds.Any())
+            {
+                var studentTakes = _context.Takes.Where(t => studentIds.Contains(t.StudentId));
+                _context.Takes.RemoveRange(studentTakes);
+            }
 
-            _context.UserRoles.RemoveRange(user.UserRoles);
-            _context.Students.RemoveRange(user.StudentProfiles);
-            _context.Instructors.RemoveRange(user.InstructorProfiles);
+            // 2. Remove Teaches of instructor profiles belonging to this user
+            var instructorIds = user.InstructorProfiles?.Select(i => i.InstructorId).ToList() ?? new List<int>();
+            if (instructorIds.Any())
+            {
+                var instructorTeaches = _context.Teaches.Where(t => instructorIds.Contains(t.InstructorId));
+                _context.Teaches.RemoveRange(instructorTeaches);
+            }
+
+            // 3. Remove roles and profiles
+            if (user.UserRoles != null)
+                _context.UserRoles.RemoveRange(user.UserRoles);
+
+            if (user.StudentProfiles != null)
+                _context.Students.RemoveRange(user.StudentProfiles);
+
+            if (user.InstructorProfiles != null)
+                _context.Instructors.RemoveRange(user.InstructorProfiles);
+
+            // 4. Remove the user entity
             _context.Users.Remove(user);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction("UserTable");
         }
 
-        public IActionResult StudentTable()
+        // ==================== STUDENT MANAGEMENT ====================
+
+        public async Task<IActionResult> StudentTable()
         {
-            var students = _context.Students
+            var students = await _context.Students
                 .Include(s => s.User)
                 .Select(s => new StudentViewModel
                 {
@@ -146,37 +175,52 @@ namespace Golestan.Controllers
                     FullName = $"{s.User.FirstName} {s.User.LastName}",
                     Email = s.User.Email,
                     EnrollmentDate = s.EnrollmentDate
-                }).ToList();
+                })
+                .ToListAsync();
 
             return View(students);
         }
 
-
         [HttpGet]
-        public IActionResult CreateStudent()
+        public async Task<IActionResult> CreateStudent()
         {
-            ViewBag.Users = _context.Users
+            ViewBag.Users = await _context.Users
                 .Select(u => new SelectListItem
                 {
                     Value = u.Id.ToString(),
                     Text = $"{u.FirstName} {u.LastName} - {u.Email}"
-                }).ToList();
+                }).ToListAsync();
 
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateStudent(CreateStudentViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Users = _context.Users
+                ViewBag.Users = await _context.Users
                     .Select(u => new SelectListItem
                     {
                         Value = u.Id.ToString(),
                         Text = $"{u.FirstName} {u.LastName} - {u.Email}"
-                    }).ToList();
+                    }).ToListAsync();
 
+                return View(model);
+            }
+
+            // Check if user already has a student profile
+            bool alreadyStudent = await _context.Students.AnyAsync(s => s.UserId == model.UserId);
+            if (alreadyStudent)
+            {
+                ModelState.AddModelError("UserId", "این کاربر در حال حاضر دارای پرونده دانشجویی فعال است.");
+                ViewBag.Users = await _context.Users
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                    }).ToListAsync();
                 return View(model);
             }
 
@@ -184,19 +228,17 @@ namespace Golestan.Controllers
             {
                 UserId = model.UserId,
                 EnrollmentDate = model.EnrollmentDate
-                
             };
+
             await AssignRoleToUserAsync(model.UserId, RoleType.Student);
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
-
-
             return RedirectToAction("StudentTable");
         }
 
-        
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteStudent(int id)
         {
             var student = await _context.Students
@@ -206,86 +248,35 @@ namespace Golestan.Controllers
             if (student == null)
                 return NotFound();
 
-            
             var takes = _context.Takes.Where(t => t.StudentId == id);
             _context.Takes.RemoveRange(takes);
 
-            
             _context.Students.Remove(student);
-
             await _context.SaveChangesAsync();
 
-            
             bool hasOtherStudentProfiles = await _context.Students
                 .AnyAsync(s => s.UserId == student.UserId && s.StudentId != id);
 
             if (!hasOtherStudentProfiles)
             {
-                
-                var studentRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Student);
-                if (studentRole != null)
-                {
-                    var userRole = await _context.UserRoles
-                        .FirstOrDefaultAsync(ur => ur.UserId == student.UserId && ur.RoleId == studentRole.Id);
+                var userRole = await _context.UserRoles
+                    .FirstOrDefaultAsync(ur => ur.UserId == student.UserId && ur.RoleId == (int)RoleType.Student);
 
-                    if (userRole != null)
-                    {
-                        _context.UserRoles.Remove(userRole);
-                        await _context.SaveChangesAsync();
-                    }
+                if (userRole != null)
+                {
+                    _context.UserRoles.Remove(userRole);
+                    await _context.SaveChangesAsync();
                 }
             }
 
             return RedirectToAction("StudentTable");
         }
 
+        // ==================== INSTRUCTOR MANAGEMENT ====================
 
-
-        [HttpGet]
-        public IActionResult CreateInstructor()
+        public async Task<IActionResult> InstructorTable()
         {
-            ViewBag.Users = _context.Users
-                .Select(u => new SelectListItem
-                {
-                    Value = u.Id.ToString(),
-                    Text = $"{u.FirstName} {u.LastName} - {u.Email}"
-                }).ToList();
-
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateInstructor(CreateInstructorViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Users = _context.Users
-                    .Select(u => new SelectListItem
-                    {
-                        Value = u.Id.ToString(),
-                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
-                    }).ToList();
-
-                return View(model);
-            }
-
-            var instructor = new Instructor
-            {
-                UserId = model.UserId,
-                Salary = model.Salary,
-                HireDate = model.HireDate
-            };
-            await AssignRoleToUserAsync(model.UserId, RoleType.Instructor);
-            _context.Instructors.Add(instructor);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("InstructorTable");
-
-        }
-
-        public IActionResult InstructorTable()
-        {
-            var instructors = _context.Instructors
+            var instructors = await _context.Instructors
                 .Include(i => i.User)
                 .Select(i => new InstructorViewModel
                 {
@@ -295,11 +286,71 @@ namespace Golestan.Controllers
                     Email = i.User.Email,
                     Salary = i.Salary,
                     HireDate = i.HireDate
-                }).ToList();
+                })
+                .ToListAsync();
 
             return View(instructors);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CreateInstructor()
+        {
+            ViewBag.Users = await _context.Users
+                .Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                }).ToListAsync();
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateInstructor(CreateInstructorViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Users = await _context.Users
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                    }).ToListAsync();
+
+                return View(model);
+            }
+
+            // Check if user already has an instructor profile
+            bool alreadyInstructor = await _context.Instructors.AnyAsync(i => i.UserId == model.UserId);
+            if (alreadyInstructor)
+            {
+                ModelState.AddModelError("UserId", "این کاربر در حال حاضر دارای پرونده استادی فعال است.");
+                ViewBag.Users = await _context.Users
+                    .Select(u => new SelectListItem
+                    {
+                        Value = u.Id.ToString(),
+                        Text = $"{u.FirstName} {u.LastName} - {u.Email}"
+                    }).ToListAsync();
+                return View(model);
+            }
+
+            var instructor = new Instructor
+            {
+                UserId = model.UserId,
+                Salary = model.Salary,
+                HireDate = model.HireDate
+            };
+
+            await AssignRoleToUserAsync(model.UserId, RoleType.Instructor);
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("InstructorTable");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteInstructor(int id)
         {
             var instructor = await _context.Instructors
@@ -309,60 +360,64 @@ namespace Golestan.Controllers
             if (instructor == null)
                 return NotFound();
 
-            
             var teaches = _context.Teaches.Where(t => t.InstructorId == id);
             _context.Teaches.RemoveRange(teaches);
 
-           
             _context.Instructors.Remove(instructor);
-
             await _context.SaveChangesAsync();
 
-            
             bool hasOtherInstructorProfiles = await _context.Instructors
                 .AnyAsync(i => i.UserId == instructor.UserId && i.InstructorId != id);
 
             if (!hasOtherInstructorProfiles)
             {
-                
-                var instructorRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleType.Instructor);
-                if (instructorRole != null)
-                {
-                    var userRole = await _context.UserRoles
-                        .FirstOrDefaultAsync(ur => ur.UserId == instructor.UserId && ur.RoleId == instructorRole.Id);
+                var userRole = await _context.UserRoles
+                    .FirstOrDefaultAsync(ur => ur.UserId == instructor.UserId && ur.RoleId == (int)RoleType.Instructor);
 
-                    if (userRole != null)
-                    {
-                        _context.UserRoles.Remove(userRole);
-                        await _context.SaveChangesAsync();
-                    }
+                if (userRole != null)
+                {
+                    _context.UserRoles.Remove(userRole);
+                    await _context.SaveChangesAsync();
                 }
             }
 
             return RedirectToAction("InstructorTable");
         }
 
+        // ==================== COURSE MANAGEMENT ====================
 
+        public async Task<IActionResult> CourseTable()
+        {
+            var courses = await _context.Courses.ToListAsync();
+            return View(courses);
+        }
 
-
+        [HttpGet]
         public IActionResult CreateCourse()
         {
             return View();
         }
 
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCourse(CreateCourseViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
+            bool codeExists = await _context.Courses.AnyAsync(c => c.Code == model.Code.Trim());
+            if (codeExists)
+            {
+                ModelState.AddModelError("Code", "درسی با این کد در سامانه ثبت شده است.");
+                return View(model);
+            }
+
             var course = new Course
             {
-                Title = model.Title,
-                Code = model.Code,
-                Unit = model.Unit,
-                Description = model.Description
+                Title = model.Title.Trim(),
+                Code = model.Code.Trim(),
+                Unit = model.Unit?.Trim() ?? "3",
+                Description = model.Description?.Trim() ?? string.Empty
             };
 
             _context.Courses.Add(course);
@@ -371,50 +426,45 @@ namespace Golestan.Controllers
             return RedirectToAction("CourseTable");
         }
 
-        public IActionResult CourseTable()
-        {
-            var courses = _context.Courses.ToList();
-            return View(courses);
-        }
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteCourse(int id)
         {
             var course = await _context.Courses
-                .Include(c => c.Sections)
+                .Include(c => c.Sections)!
                     .ThenInclude(s => s.Takes)
-                .Include(c => c.Sections)
+                .Include(c => c.Sections)!
                     .ThenInclude(s => s.Teach)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (course == null)
                 return NotFound();
 
-            foreach (var section in course.Sections)
+            if (course.Sections != null)
             {
+                foreach (var section in course.Sections)
+                {
+                    if (section.Takes != null && section.Takes.Any())
+                        _context.Takes.RemoveRange(section.Takes);
 
-                if (section.Takes != null && section.Takes.Any())
-                    _context.Takes.RemoveRange(section.Takes);
+                    if (section.Teach != null)
+                        _context.Teaches.Remove(section.Teach);
+                }
 
-
-                if (section.Teach != null)
-                    _context.Teaches.Remove(section.Teach);
+                _context.Sections.RemoveRange(course.Sections);
             }
 
-
-            _context.Sections.RemoveRange(course.Sections);
-
-
             _context.Courses.Remove(course);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction("CourseTable");
         }
 
-        public IActionResult ClassroomTable()
+        // ==================== CLASSROOM MANAGEMENT ====================
+
+        public async Task<IActionResult> ClassroomTable()
         {
-            var classrooms = _context.Classrooms.ToList();
+            var classrooms = await _context.Classrooms.ToListAsync();
             return View(classrooms);
         }
 
@@ -425,57 +475,75 @@ namespace Golestan.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateClassroom(Classroom classroom)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateClassroom(Classroom classroom)
         {
+            if (classroom.Capacity <= 0)
+            {
+                ModelState.AddModelError("Capacity", "ظرفیت کلاس باید بزرگتر از صفر باشد.");
+            }
+
+            bool duplicate = await _context.Classrooms.AnyAsync(c =>
+                c.Building == classroom.Building.Trim() &&
+                c.RoomNumber == classroom.RoomNumber.Trim());
+
+            if (duplicate)
+            {
+                ModelState.AddModelError("RoomNumber", "کلاسی با این شماره در این ساختمان قبلاً ثبت شده است.");
+            }
+
             if (!ModelState.IsValid)
                 return View(classroom);
 
+            classroom.Building = classroom.Building.Trim();
+            classroom.RoomNumber = classroom.RoomNumber.Trim();
+
             _context.Classrooms.Add(classroom);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("ClassroomTable");
         }
 
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteClassroom(int id)
         {
             var classroom = await _context.Classrooms
-                .Include(c => c.Sections)
+                .Include(c => c.Sections)!
                     .ThenInclude(s => s.Takes)
-                .Include(c => c.Sections)
+                .Include(c => c.Sections)!
                     .ThenInclude(s => s.Teach)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (classroom == null)
                 return NotFound();
 
-            foreach (var section in classroom.Sections)
+            if (classroom.Sections != null)
             {
+                foreach (var section in classroom.Sections)
+                {
+                    if (section.Takes != null && section.Takes.Any())
+                        _context.Takes.RemoveRange(section.Takes);
 
-                if (section.Takes != null && section.Takes.Any())
-                    _context.Takes.RemoveRange(section.Takes);
+                    if (section.Teach != null)
+                        _context.Teaches.Remove(section.Teach);
+                }
 
-
-                if (section.Teach != null)
-                    _context.Teaches.Remove(section.Teach);
+                _context.Sections.RemoveRange(classroom.Sections);
             }
 
-
-            _context.Sections.RemoveRange(classroom.Sections);
-
-
             _context.Classrooms.Remove(classroom);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction("ClassroomTable");
         }
 
-        public IActionResult TimeSlotTable()
+        // ==================== TIMESLOT MANAGEMENT ====================
+
+        public async Task<IActionResult> TimeSlotTable()
         {
-            var timeSlots = _context.TimeSlots.ToList();
-            return View(timeSlots);
+            var slots = await _context.TimeSlots.ToListAsync();
+            return View(slots);
         }
 
         [HttpGet]
@@ -488,14 +556,17 @@ namespace Golestan.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateTimeSlot(CreateTimeSlotViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (model.StartTime.TimeOfDay >= model.EndTime.TimeOfDay)
             {
-                return View(model);
+                ModelState.AddModelError("EndTime", "ساعت پایان کلاس باید پس از ساعت شروع باشد.");
             }
+
+            if (!ModelState.IsValid)
+                return View(model);
 
             var timeSlot = new TimeSlot
             {
-                Day = model.Day,
+                Day = model.Day.Trim(),
                 StartTime = model.StartTime,
                 EndTime = model.EndTime
             };
@@ -506,201 +577,141 @@ namespace Golestan.Controllers
             return RedirectToAction("TimeSlotTable");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteTimeSlot(int id)
         {
             var timeSlot = await _context.TimeSlots
-                .Include(ts => ts.Sections)
+                .Include(ts => ts.Sections)!
                     .ThenInclude(s => s.Takes)
-                .Include(ts => ts.Sections)
+                .Include(ts => ts.Sections)!
                     .ThenInclude(s => s.Teach)
                 .FirstOrDefaultAsync(ts => ts.Id == id);
 
             if (timeSlot == null)
                 return NotFound();
 
-            foreach (var section in timeSlot.Sections)
+            if (timeSlot.Sections != null)
             {
-                if (section.Takes != null)
-                    _context.Takes.RemoveRange(section.Takes);
+                foreach (var section in timeSlot.Sections)
+                {
+                    if (section.Takes != null)
+                        _context.Takes.RemoveRange(section.Takes);
 
-                if (section.Teach != null)
-                    _context.Teaches.Remove(section.Teach);
+                    if (section.Teach != null)
+                        _context.Teaches.Remove(section.Teach);
+                }
+
+                _context.Sections.RemoveRange(timeSlot.Sections);
             }
 
-            _context.Sections.RemoveRange(timeSlot.Sections);
             _context.TimeSlots.Remove(timeSlot);
-
             await _context.SaveChangesAsync();
+
             return RedirectToAction("TimeSlotTable");
         }
 
+        // ==================== SECTION MANAGEMENT ====================
 
+        public async Task<IActionResult> SectionTable()
+        {
+            var sections = await _context.Sections
+                .Include(s => s.Course)
+                .Include(s => s.Classroom)
+                .Include(s => s.TimeSlot)
+                .Include(s => s.Teach)!
+                    .ThenInclude(t => t.Instructor)
+                        .ThenInclude(i => i.User)
+                .Select(s => new SectionTableViewModel
+                {
+                    Id = s.Id,
+                    CourseTitle = s.Course.Title,
+                    InstructorName = s.Teach != null && s.Teach.Instructor != null
+                        ? $"{s.Teach.Instructor.User.FirstName} {s.Teach.Instructor.User.LastName}"
+                        : "تعیین نشده",
+                    Year = s.Year,
+                    Semester = s.Semester,
+                    ClassroomName = $"{s.Classroom.Building} - {s.Classroom.RoomNumber}",
+                    TimeSlotInfo = $"{s.TimeSlot.Day} {s.TimeSlot.StartTime:HH\\:mm} - {s.TimeSlot.EndTime:HH\\:mm}",
+                    FinalExamDate = s.FinalExamDate
+                })
+                .ToListAsync();
 
-
-
-
+            return View(sections);
+        }
 
         [HttpGet]
         public IActionResult CreateSection()
         {
             var model = new CreateSectionViewModel
             {
-                Courses = _context.Courses
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.Id.ToString(),
-                        Text = c.Title
-                    }).ToList(),
-
-                Classrooms = _context.Classrooms
-                    .Select(cl => new SelectListItem
-                    {
-                        Value = cl.Id.ToString(),
-                        Text = $"{cl.Building} - {cl.RoomNumber}"
-                    }).ToList(),
-
-                TimeSlots = _context.TimeSlots
-                    .Select(ts => new SelectListItem
-                    {
-                        Value = ts.Id.ToString(),
-                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
-                    }).ToList(),
-
-                Instructors = _context.Instructors
-                    .Include(i => i.User)
-                    .Select(i => new SelectListItem
-                    {
-                        Value = i.InstructorId.ToString(),
-                        Text = $"{i.User.FirstName} {i.User.LastName} {i.InstructorId}"
-                    }).ToList(),
-                    FinalExamDate = DateTime.Today
+                Year = DateTime.Now.Year,
+                Semester = 1,
+                FinalExamDate = DateTime.Today.AddMonths(4)
             };
-
+            FillDropDowns(model);
             return View(model);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateSection(CreateSectionViewModel model)
+        public async Task<IActionResult> CreateSection(CreateSectionViewModel model)
         {
-            
-            if (!ModelState.IsValid)
+            var selectedTimeSlot = await _context.TimeSlots.FirstOrDefaultAsync(ts => ts.Id == model.TimeSlotId);
+            if (selectedTimeSlot == null)
             {
-                model.Courses = _context.Courses
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.Id.ToString(),
-                        Text = c.Title
-                    }).ToList();
-
-                model.Classrooms = _context.Classrooms
-                    .Select(cl => new SelectListItem
-                    {
-                        Value = cl.Id.ToString(),
-                        Text = $"{cl.Building} - {cl.RoomNumber}"
-                    }).ToList();
-
-                model.TimeSlots = _context.TimeSlots
-                    .Select(ts => new SelectListItem
-                    {
-                        Value = ts.Id.ToString(),
-                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
-                    }).ToList();
-
-                model.Instructors = _context.Instructors
-                    .Include(i => i.User)
-                    .Select(i => new SelectListItem
-                    {
-                        Value = i.InstructorId.ToString(),
-                        Text = $"{i.User.FirstName} {i.User.LastName}"
-                    }).ToList();
-
-                return View(model);
+                ModelState.AddModelError("TimeSlotId", "بازه زمانی انتخاب‌شده نامعتبر است.");
             }
 
+            if (ModelState.IsValid && selectedTimeSlot != null)
+            {
+                var selDay = selectedTimeSlot.Day;
+                var selStart = selectedTimeSlot.StartTime.TimeOfDay;
+                var selEnd = selectedTimeSlot.EndTime.TimeOfDay;
 
-            var selectedTimeSlot = _context.TimeSlots.FirstOrDefault(ts => ts.Id == model.TimeSlotId);
+                // Check classroom conflict in the same year and semester with time overlap
+                var allSectionsInTerm = await _context.Sections
+                    .Include(s => s.TimeSlot)
+                    .Where(s => s.ClassroomId == model.ClassroomId &&
+                                s.Year == model.Year &&
+                                s.Semester == model.Semester)
+                    .ToListAsync();
 
-            var conflictingClassroom = _context.Sections
-                .Include(s => s.TimeSlot)
-                .Any(s =>
-                    s.ClassroomId == model.ClassroomId &&
-                    s.Year == model.Year &&
-                    s.Semester == model.Semester &&
-                    s.TimeSlot.Day == selectedTimeSlot.Day &&
-                    s.TimeSlot.StartTime < selectedTimeSlot.EndTime &&
-                    selectedTimeSlot.StartTime < s.TimeSlot.EndTime
-                );
+                bool conflictingClassroom = allSectionsInTerm.Any(s =>
+                    s.TimeSlot != null &&
+                    s.TimeSlot.Day == selDay &&
+                    s.TimeSlot.StartTime.TimeOfDay < selEnd &&
+                    selStart < s.TimeSlot.EndTime.TimeOfDay);
 
+                // Check instructor conflict in the same year and semester with time overlap
+                var instructorTeachesInTerm = await _context.Teaches
+                    .Include(t => t.Section)
+                        .ThenInclude(s => s.TimeSlot)
+                    .Where(t => t.InstructorId == model.InstructorId &&
+                                t.Section != null &&
+                                t.Section.Year == model.Year &&
+                                t.Section.Semester == model.Semester)
+                    .ToListAsync();
 
+                bool conflictingInstructor = instructorTeachesInTerm.Any(t =>
+                    t.Section.TimeSlot != null &&
+                    t.Section.TimeSlot.Day == selDay &&
+                    t.Section.TimeSlot.StartTime.TimeOfDay < selEnd &&
+                    selStart < t.Section.TimeSlot.EndTime.TimeOfDay);
 
+                if (conflictingClassroom)
+                    ModelState.AddModelError("ClassroomId", "کلاس انتخاب‌شده در این بازه زمانی در همین ترم قبلاً رزرو شده است.");
 
-            var conflictingInstructor = _context.Teaches
-                .Include(t => t.Section)
-                .ThenInclude(s => s.TimeSlot)
-                .Any(t =>
-                    t.InstructorId == model.InstructorId &&
-                    t.Section.Year == model.Year &&
-                    t.Section.Semester == model.Semester &&
-                    (
-                        t.Section.TimeSlot.Day == selectedTimeSlot.Day &&
-                        (
-                            (t.Section.TimeSlot.StartTime < selectedTimeSlot.EndTime) &&
-                            (selectedTimeSlot.StartTime < t.Section.TimeSlot.EndTime)
-                        )
-                    )
-                );
-                /*||
-                _context.Teaches
-                .Include(t => t.Section)
-                .ThenInclude(s => s.TimeSlot)
-                .Any(t => t.Section.TimeSlotId == model.TimeSlotId);*/
-
-
-
-            if (conflictingClassroom)
-                ModelState.AddModelError("ClassroomId", "کلاس انتخاب‌شده در این بازه زمانی قبلاً استفاده شده است.");
-
-            if (conflictingInstructor)
-                ModelState.AddModelError("InstructorId", "استاد انتخاب‌شده در این بازه زمانی قبلاً مشغول تدریس است.");
+                if (conflictingInstructor)
+                    ModelState.AddModelError("InstructorId", "استاد انتخاب‌شده در این بازه زمانی در همین ترم کلاس دیگری دارد.");
+            }
 
             if (!ModelState.IsValid)
             {
-                
-                model.Courses = _context.Courses
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.Id.ToString(),
-                        Text = c.Title
-                    }).ToList();
-
-                model.Classrooms = _context.Classrooms
-                    .Select(cl => new SelectListItem
-                    {
-                        Value = cl.Id.ToString(),
-                        Text = $"{cl.Building} - {cl.RoomNumber}"
-                    }).ToList();
-
-                model.TimeSlots = _context.TimeSlots
-                    .Select(ts => new SelectListItem
-                    {
-                        Value = ts.Id.ToString(),
-                        Text = $"{ts.Day} ({ts.StartTime:hh\\:mm} - {ts.EndTime:hh\\:mm})"
-                    }).ToList();
-
-                model.Instructors = _context.Instructors
-                    .Include(i => i.User)
-                    .Select(i => new SelectListItem
-                    {
-                        Value = i.InstructorId.ToString(),
-                        Text = $"{i.User.FirstName} {i.User.LastName}"
-                    }).ToList();
-
+                FillDropDowns(model);
                 return View(model);
             }
 
-            
             var newSection = new Section
             {
                 CourseId = model.CourseId,
@@ -712,9 +723,8 @@ namespace Golestan.Controllers
             };
 
             _context.Sections.Add(newSection);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            
             var teach = new Teach
             {
                 SectionId = newSection.Id,
@@ -722,42 +732,10 @@ namespace Golestan.Controllers
             };
 
             _context.Teaches.Add(teach);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("SectionTable");
         }
-
-
-
-
-
-        public IActionResult SectionTable()
-        {
-            var sections = _context.Sections
-                .Include(s => s.Course)
-                .Include(s => s.Classroom)
-                .Include(s => s.TimeSlot)
-                .Include(s => s.Teach)
-                    .ThenInclude(t => t.Instructor)
-                        .ThenInclude(i => i.User)
-                .Select(s => new SectionTableViewModel
-                {
-                    Id = s.Id,
-                    CourseTitle = s.Course.Title,
-                    InstructorName = s.Teach != null
-                        ? $"{s.Teach.Instructor.User.FirstName} {s.Teach.Instructor.User.LastName}"
-                        : "نامشخص",
-                    Year = s.Year,
-                    Semester = s.Semester,
-                    ClassroomName = $"{s.Classroom.Building} - {s.Classroom.RoomNumber}",
-                    TimeSlotInfo = $"{s.TimeSlot.Day} {s.TimeSlot.StartTime:hh\\:mm} - {s.TimeSlot.EndTime:hh\\:mm}",
-                    FinalExamDate = s.FinalExamDate
-                })
-                .ToList();
-
-            return View(sections);
-        }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -778,12 +756,10 @@ namespace Golestan.Controllers
                 _context.Teaches.Remove(section.Teach);
 
             _context.Sections.Remove(section);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction("SectionTable");
         }
-
 
         public async Task<IActionResult> SectionDetails(int id)
         {
@@ -791,10 +767,10 @@ namespace Golestan.Controllers
                 .Include(s => s.Course)
                 .Include(s => s.Classroom)
                 .Include(s => s.TimeSlot)
-                .Include(s => s.Teach)
+                .Include(s => s.Teach)!
                     .ThenInclude(t => t.Instructor)
                         .ThenInclude(i => i.User)
-                .Include(s => s.Takes)
+                .Include(s => s.Takes)!
                     .ThenInclude(t => t.Student)
                         .ThenInclude(st => st.User)
                 .FirstOrDefaultAsync(s => s.Id == id);
@@ -808,24 +784,24 @@ namespace Golestan.Controllers
                 CourseTitle = section.Course.Title,
                 Year = section.Year,
                 Semester = section.Semester,
-                ClassroomName = section.Classroom.Building + " " + section.Classroom,
-                TimeSlotInfo = $"{section.TimeSlot.Day} {section.TimeSlot.StartTime} - {section.TimeSlot.EndTime}",
+                ClassroomName = $"{section.Classroom.Building} - {section.Classroom.RoomNumber}",
+                TimeSlotInfo = $"{section.TimeSlot.Day} {section.TimeSlot.StartTime:HH\\:mm} - {section.TimeSlot.EndTime:HH\\:mm}",
                 FinalExamDate = section.FinalExamDate,
                 InstructorName = section.Teach?.Instructor != null
-                     ? section.Teach.Instructor.User.FirstName + " " + section.Teach.Instructor.User.LastName
-                     : null,
-                Students = section.Takes.Select(t => new StudentInSectionViewModel
+                    ? $"{section.Teach.Instructor.User.FirstName} {section.Teach.Instructor.User.LastName}"
+                    : "تعیین نشده",
+                Students = (section.Takes ?? new List<Take>()).Select(t => new StudentInSectionViewModel
                 {
                     StudentId = t.StudentId,
-                    StudentName = t.Student.User.FirstName + " " + t.Student.User.LastName,
+                    StudentName = $"{t.Student.User.FirstName} {t.Student.User.LastName}",
                     Grade = t.Grade
                 }).ToList()
             };
 
-
             return View(model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> ChangeInstructor(int id)
         {
             var section = await _context.Sections
@@ -840,9 +816,8 @@ namespace Golestan.Controllers
                 .Select(i => new SelectListItem
                 {
                     Value = i.InstructorId.ToString(),
-                    Text = i.User.FirstName + i.User.LastName
-                })
-                .ToListAsync();
+                    Text = $"{i.User.FirstName} {i.User.LastName}"
+                }).ToListAsync();
 
             var model = new ChangeInstructorViewModel
             {
@@ -855,64 +830,64 @@ namespace Golestan.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeInstructor(ChangeInstructorViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                Console.WriteLine("ModelState Invalid");
-
-                model.Instructors = await _context.Instructors
-                    .Include(i => i.User)
-                    .Select(i => new SelectListItem
-                    {
-                        Value = i.InstructorId.ToString(),
-                        Text = i.User.FirstName + " " + i.User.LastName
-                    })
-                    .ToListAsync();
-
-                return View(model);
-            }
-
             var section = await _context.Sections
                 .Include(s => s.Teach)
+                .Include(s => s.TimeSlot)
                 .FirstOrDefaultAsync(s => s.Id == model.SectionId);
 
             if (section == null)
                 return NotFound();
 
-            var timeSlotId = section.TimeSlotId;
-
-            bool instructorBusy = await _context.Teaches
-                .Include(t => t.Section)
-                .AnyAsync(t =>
-                    t.InstructorId == model.SelectedInstructorId &&
-                    t.Section.TimeSlotId == timeSlotId &&
-                    t.SectionId != model.SectionId);
-
-            if (instructorBusy)
+            if (section.TimeSlot != null)
             {
-                ModelState.AddModelError("SelectedInstructorId", "این استاد در این بازه زمانی سشن دیگری دارد.");
+                var curDay = section.TimeSlot.Day;
+                var curStart = section.TimeSlot.StartTime.TimeOfDay;
+                var curEnd = section.TimeSlot.EndTime.TimeOfDay;
 
+                var otherTeachesInTerm = await _context.Teaches
+                    .Include(t => t.Section)
+                        .ThenInclude(s => s.TimeSlot)
+                    .Where(t => t.InstructorId == model.SelectedInstructorId &&
+                                t.SectionId != model.SectionId &&
+                                t.Section != null &&
+                                t.Section.Year == section.Year &&
+                                t.Section.Semester == section.Semester)
+                    .ToListAsync();
+
+                bool instructorBusy = otherTeachesInTerm.Any(t =>
+                    t.Section.TimeSlot != null &&
+                    t.Section.TimeSlot.Day == curDay &&
+                    t.Section.TimeSlot.StartTime.TimeOfDay < curEnd &&
+                    curStart < t.Section.TimeSlot.EndTime.TimeOfDay);
+
+                if (instructorBusy)
+                {
+                    ModelState.AddModelError("SelectedInstructorId", "این استاد در همین بازه زمانی در این ترم کلاس دیگری دارد.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
                 model.Instructors = await _context.Instructors
                     .Include(i => i.User)
                     .Select(i => new SelectListItem
                     {
                         Value = i.InstructorId.ToString(),
-                        Text = i.User.FirstName + " " + i.User.LastName
-                    })
-                    .ToListAsync();
+                        Text = $"{i.User.FirstName} {i.User.LastName}"
+                    }).ToListAsync();
 
                 return View(model);
             }
 
-            
             if (section.Teach != null)
             {
                 _context.Teaches.Remove(section.Teach);
                 await _context.SaveChangesAsync();
             }
 
-            
             var newTeach = new Teach
             {
                 SectionId = section.Id,
@@ -925,32 +900,53 @@ namespace Golestan.Controllers
             return RedirectToAction("SectionDetails", new { id = model.SectionId });
         }
 
-
         [HttpGet]
         public async Task<IActionResult> AddStudentToSection(int sectionId)
         {
             var section = await _context.Sections
+                .Include(s => s.Takes)
                 .Include(s => s.TimeSlot)
                 .FirstOrDefaultAsync(s => s.Id == sectionId);
 
             if (section == null)
                 return NotFound();
 
-            int timeSlotId = section.TimeSlotId;
+            var currentSlot = section.TimeSlot;
+            var enrolledStudentIds = section.Takes?.Select(t => t.StudentId).ToList() ?? new List<int>();
 
-            
-            var busyStudentIds = await _context.Takes
-                .Where(t => t.Section.TimeSlotId == timeSlotId)
-                .Select(t => t.StudentId)
-                .ToListAsync();
+            // Find students who have an overlapping class in the SAME semester and year
+            List<int> busyStudentIds = new List<int>();
+            if (currentSlot != null)
+            {
+                var curDay = currentSlot.Day;
+                var curStart = currentSlot.StartTime.TimeOfDay;
+                var curEnd = currentSlot.EndTime.TimeOfDay;
+
+                var takesInTerm = await _context.Takes
+                    .Include(t => t.Section)
+                        .ThenInclude(s => s.TimeSlot)
+                    .Where(t => t.Section != null &&
+                                t.Section.Year == section.Year &&
+                                t.Section.Semester == section.Semester)
+                    .ToListAsync();
+
+                busyStudentIds = takesInTerm
+                    .Where(t => t.Section.TimeSlot != null &&
+                                t.Section.TimeSlot.Day == curDay &&
+                                t.Section.TimeSlot.StartTime.TimeOfDay < curEnd &&
+                                curStart < t.Section.TimeSlot.EndTime.TimeOfDay)
+                    .Select(t => t.StudentId)
+                    .Distinct()
+                    .ToList();
+            }
 
             var availableStudents = await _context.Students
                 .Include(s => s.User)
-                .Where(s => !busyStudentIds.Contains(s.StudentId))
+                .Where(s => !enrolledStudentIds.Contains(s.StudentId) && !busyStudentIds.Contains(s.StudentId))
                 .Select(s => new SelectListItem
                 {
                     Value = s.StudentId.ToString(),
-                    Text = s.User.FirstName + " " + s.User.LastName
+                    Text = $"{s.User.FirstName} {s.User.LastName} ({s.StudentId})"
                 })
                 .ToListAsync();
 
@@ -963,10 +959,78 @@ namespace Golestan.Controllers
             return View(model);
         }
 
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddStudentToSection(AddStudentViewModel model)
         {
+            var section = await _context.Sections
+                .Include(s => s.TimeSlot)
+                .Include(s => s.Classroom)
+                .Include(s => s.Takes)
+                .FirstOrDefaultAsync(s => s.Id == model.SectionId);
+
+            if (section == null)
+                return NotFound();
+
+            // 1. Check classroom capacity
+            int currentEnrollment = section.Takes?.Count ?? 0;
+            if (section.Classroom != null && currentEnrollment >= section.Classroom.Capacity)
+            {
+                ModelState.AddModelError(string.Empty, $"ظرفیت کلاس این گروه تکمیل شده است (ظرفیت: {section.Classroom.Capacity} نفر).");
+            }
+
+            // 2. Check duplicate enrollment
+            bool alreadyExists = await _context.Takes
+                .AnyAsync(t => t.SectionId == model.SectionId && t.StudentId == model.SelectedStudentId);
+
+            if (alreadyExists)
+            {
+                ModelState.AddModelError(string.Empty, "این دانشجو قبلاً در این گروه درسی ثبت‌نام شده است.");
+            }
+
+            // 3. Check time overlap in the SAME year and semester
+            if (section.TimeSlot != null)
+            {
+                var curDay = section.TimeSlot.Day;
+                var curStart = section.TimeSlot.StartTime.TimeOfDay;
+                var curEnd = section.TimeSlot.EndTime.TimeOfDay;
+
+                var studentTakesInTerm = await _context.Takes
+                    .Include(t => t.Section)
+                        .ThenInclude(s => s.TimeSlot)
+                    .Where(t => t.StudentId == model.SelectedStudentId &&
+                                t.Section != null &&
+                                t.Section.Year == section.Year &&
+                                t.Section.Semester == section.Semester)
+                    .ToListAsync();
+
+                bool isBusy = studentTakesInTerm.Any(t =>
+                    t.Section.TimeSlot != null &&
+                    t.Section.TimeSlot.Day == curDay &&
+                    t.Section.TimeSlot.StartTime.TimeOfDay < curEnd &&
+                    curStart < t.Section.TimeSlot.EndTime.TimeOfDay);
+
+                if (isBusy)
+                {
+                    ModelState.AddModelError(string.Empty, "دانشجو در این بازه زمانی در کلاس دیگری در همین ترم حضور دارد.");
+                }
+            }
+
+            // 4. Check Final Exam date conflict in the SAME year and semester
+            bool examConflict = await _context.Takes
+                .Include(t => t.Section)
+                .AnyAsync(t =>
+                    t.StudentId == model.SelectedStudentId &&
+                    t.SectionId != model.SectionId &&
+                    t.Section.Year == section.Year &&
+                    t.Section.Semester == section.Semester &&
+                    t.Section.FinalExamDate.Date == section.FinalExamDate.Date);
+
+            if (examConflict)
+            {
+                ModelState.AddModelError(string.Empty, "دانشجو در تاریخ امتحان نهایی این درس، آزمون درس دیگری را در برنامه خود دارد.");
+            }
+
             if (!ModelState.IsValid)
             {
                 model.Students = await _context.Students
@@ -974,48 +1038,10 @@ namespace Golestan.Controllers
                     .Select(s => new SelectListItem
                     {
                         Value = s.StudentId.ToString(),
-                        Text = s.User.FirstName + " " + s.User.LastName
+                        Text = $"{s.User.FirstName} {s.User.LastName} ({s.StudentId})"
                     })
                     .ToListAsync();
 
-                return View(model);
-            }
-
-            var section = await _context.Sections
-                .Include(s => s.TimeSlot)
-                .FirstOrDefaultAsync(s => s.Id == model.SectionId);
-
-            if (section == null)
-                return NotFound();
-
-            int timeSlotId = section.TimeSlotId;
-
-            
-            bool isBusy = await _context.Takes
-                .AnyAsync(t => t.StudentId == model.SelectedStudentId && t.Section.TimeSlotId == timeSlotId);
-
-            if (isBusy)
-            {
-                ModelState.AddModelError("", "دانشجو در این بازه زمانی در کلاس دیگری حضور دارد.");
-                model.Students = await _context.Students
-                    .Include(s => s.User)
-                    .Select(s => new SelectListItem
-                    {
-                        Value = s.StudentId.ToString(),
-                        Text = s.User.FirstName + " " + s.User.LastName
-                    })
-                    .ToListAsync();
-
-                return View(model);
-            }
-
-            
-            bool alreadyExists = await _context.Takes
-                .AnyAsync(t => t.SectionId == model.SectionId && t.StudentId == model.SelectedStudentId);
-
-            if (alreadyExists)
-            {
-                ModelState.AddModelError("", "این دانشجو قبلاً در این سشن ثبت شده است.");
                 return View(model);
             }
 
@@ -1023,7 +1049,7 @@ namespace Golestan.Controllers
             {
                 SectionId = model.SectionId,
                 StudentId = model.SelectedStudentId,
-                Grade = 0
+                Grade = null // Student has no initial grade
             };
 
             _context.Takes.Add(take);
@@ -1032,13 +1058,12 @@ namespace Golestan.Controllers
             return RedirectToAction("SectionDetails", new { id = model.SectionId });
         }
 
-        
         [HttpGet]
         public async Task<IActionResult> UpdateGrade(int sectionId, int studentId)
         {
             var take = await _context.Takes
                 .Include(t => t.Student)
-                .ThenInclude(s => s.User)
+                    .ThenInclude(s => s.User)
                 .FirstOrDefaultAsync(t => t.SectionId == sectionId && t.StudentId == studentId);
 
             if (take == null)
@@ -1049,30 +1074,18 @@ namespace Golestan.Controllers
                 SectionId = sectionId,
                 StudentId = studentId,
                 Grade = take.Grade ?? 0,
-                StudentName = take.Student.User.FirstName + " " + take.Student.User.LastName
+                StudentName = $"{take.Student.User.FirstName} {take.Student.User.LastName}"
             };
 
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateGrade(UpdateGradeViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine("Validation Error: " + error.ErrorMessage);
-                }
-                
-                var student = await _context.Students
-                    .Include(s => s.User)
-                    .FirstOrDefaultAsync(s => s.StudentId == model.StudentId);
-
-                model.StudentName = student != null ? student.User.FirstName + " " + student.User.LastName : "";
-
                 return View(model);
-            }
 
             var take = await _context.Takes
                 .FirstOrDefaultAsync(t => t.SectionId == model.SectionId && t.StudentId == model.StudentId);
@@ -1087,24 +1100,19 @@ namespace Golestan.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveStudent(int sectionId, int studentId)
         {
-            
             var take = await _context.Takes
                 .FirstOrDefaultAsync(t => t.SectionId == sectionId && t.StudentId == studentId);
 
             if (take == null)
-            {
                 return NotFound();
-            }
 
             _context.Takes.Remove(take);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("SectionDetails", new { id = sectionId });
         }
-
-
-
     }
 }
