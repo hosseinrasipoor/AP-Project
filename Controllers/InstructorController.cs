@@ -23,14 +23,17 @@ namespace Golestan.Controllers
             return View();
         }
 
-
         private async Task<int?> GetCurrentInstructorIdAsync()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
-                return null;
+            var profileIdClaim = User.FindFirst("ProfileId");
+            if (profileIdClaim != null && int.TryParse(profileIdClaim.Value, out int profileId) && profileId > 0)
+            {
+                var profile = await _context.Instructors.FirstOrDefaultAsync(i => i.InstructorId == profileId);
+                if (profile != null) return profile.InstructorId;
+            }
 
-            if (!int.TryParse(userIdClaim.Value, out int userId))
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 return null;
 
             var instructor = await _context.Instructors
@@ -39,7 +42,6 @@ namespace Golestan.Controllers
             return instructor?.InstructorId;
         }
 
-        
         public async Task<IActionResult> MySections()
         {
             int? instructorId = await GetCurrentInstructorIdAsync();
@@ -60,7 +62,7 @@ namespace Golestan.Controllers
                     Year = t.Section.Year,
                     Semester = t.Section.Semester,
                     ClassroomName = $"{t.Section.Classroom.Building} - {t.Section.Classroom.RoomNumber}",
-                    TimeSlotInfo = $"{t.Section.TimeSlot.Day} {t.Section.TimeSlot.StartTime:hh\\:mm} - {t.Section.TimeSlot.EndTime:hh\\:mm}",
+                    TimeSlotInfo = $"{t.Section.TimeSlot.Day} {t.Section.TimeSlot.StartTime:HH\\:mm} - {t.Section.TimeSlot.EndTime:HH\\:mm}",
                     FinalExamDate = t.Section.FinalExamDate
                 })
                 .ToListAsync();
@@ -68,7 +70,6 @@ namespace Golestan.Controllers
             return View(sections);
         }
 
-        
         public async Task<IActionResult> SectionDetails(int id)
         {
             int? instructorId = await GetCurrentInstructorIdAsync();
@@ -98,11 +99,11 @@ namespace Golestan.Controllers
                 CourseTitle = section.Course.Title,
                 Year = section.Year,
                 Semester = section.Semester,
-                ClassroomName = $"{section.Classroom.Building} {section.Classroom.RoomNumber}",
-                TimeSlotInfo = $"{section.TimeSlot.Day} {section.TimeSlot.StartTime} - {section.TimeSlot.EndTime}",
+                ClassroomName = $"{section.Classroom.Building} - {section.Classroom.RoomNumber}",
+                TimeSlotInfo = $"{section.TimeSlot.Day} {section.TimeSlot.StartTime:HH\\:mm} - {section.TimeSlot.EndTime:HH\\:mm}",
                 FinalExamDate = section.FinalExamDate,
                 InstructorName = $"{teach.Instructor.User.FirstName} {teach.Instructor.User.LastName}",
-                Students = section.Takes.Select(t => new StudentInSectionViewModel
+                Students = (section.Takes ?? new List<Take>()).Select(t => new StudentInSectionViewModel
                 {
                     StudentId = t.StudentId,
                     StudentName = $"{t.Student.User.FirstName} {t.Student.User.LastName}",
@@ -113,8 +114,8 @@ namespace Golestan.Controllers
             return View(model);
         }
 
-        
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveStudent(int sectionId, int studentId)
         {
             int? instructorId = await GetCurrentInstructorIdAsync();
@@ -139,7 +140,6 @@ namespace Golestan.Controllers
             return RedirectToAction("SectionDetails", new { id = sectionId });
         }
 
-        
         [HttpGet]
         public async Task<IActionResult> UpdateGrade(int sectionId, int studentId)
         {
@@ -172,8 +172,8 @@ namespace Golestan.Controllers
             return View(model);
         }
 
-        
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateGrade(UpdateGradeViewModel model)
         {
             if (!ModelState.IsValid)
