@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Golestan.Models
 {
@@ -11,7 +11,7 @@ namespace Golestan.Models
         public Section Section { get; set; }
 
         [Range(0,20)]
-        public int Grade { get; set;}
+        public int? Grade { get; set;}
 
         
         

@@ -1,4 +1,4 @@
-﻿using Golestan.Models;
+using Golestan.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -92,7 +92,12 @@ namespace UniversityManager.Data
                 .WithMany()
                 .HasForeignKey(s => s.TimeSlotId);
 
-
+            // Seed default roles
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = (int)RoleType.Admin, Name = RoleType.Admin },
+                new Role { Id = (int)RoleType.Student, Name = RoleType.Student },
+                new Role { Id = (int)RoleType.Instructor, Name = RoleType.Instructor }
+            );
         }
     }
 }

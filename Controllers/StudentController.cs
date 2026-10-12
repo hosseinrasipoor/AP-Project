@@ -1,4 +1,4 @@
-﻿using Golestan.Models;
+using Golestan.Models;
 using Golestan.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +20,15 @@ namespace Golestan.Controllers
 
         private async Task<int?> GetCurrentStudentIdAsync()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
-                return null;
+            var profileIdClaim = User.FindFirst("ProfileId");
+            if (profileIdClaim != null && int.TryParse(profileIdClaim.Value, out int profileId) && profileId > 0)
+            {
+                var profile = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == profileId);
+                if (profile != null) return profile.StudentId;
+            }
 
-            if (!int.TryParse(userIdClaim.Value, out int userId))
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 return null;
 
             var student = await _context.Students
@@ -33,23 +37,19 @@ namespace Golestan.Controllers
             return student?.StudentId;
         }
 
-        
         public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
-                return Unauthorized();
-
-            if (!int.TryParse(userIdClaim.Value, out int userId))
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 return Unauthorized();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
-                return NotFound("User not found");
+                return NotFound("کاربر یافت نشد");
 
             int? studentId = await GetCurrentStudentIdAsync();
             if (studentId == null)
-                return NotFound("Student profile not found");
+                return NotFound("پروفایل دانشجویی یافت نشد");
 
             var takes = await _context.Takes
                 .Include(t => t.Section)
@@ -57,15 +57,18 @@ namespace Golestan.Controllers
                 .Where(t => t.StudentId == studentId)
                 .ToListAsync();
 
+            var gradedTakes = takes.Where(t => t.Grade.HasValue).ToList();
+            double gpa = gradedTakes.Any() ? Math.Round(gradedTakes.Average(t => (double)t.Grade!.Value), 2) : 0;
+
             var model = new StudentDashboardViewModel
             {
                 StudentName = $"{user.FirstName} {user.LastName}",
                 Courses = takes.Select(t => new StudentCourseViewModel
                 {
                     CourseTitle = t.Section.Course.Title,
-                    Grade = t.Grade
+                    Grade = t.Grade.HasValue ? (double)t.Grade.Value : null
                 }).ToList(),
-                GPA = takes.Any() ? Math.Round(takes.Average(t => t.Grade), 2) : 0
+                GPA = gpa
             };
 
             return View(model);

@@ -1,4 +1,4 @@
-﻿using Golestan.Models;
+using Golestan.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -165,7 +165,7 @@ namespace Golestan.Controllers
             {
                 SectionId = sectionId,
                 StudentId = studentId,
-                Grade = take.Grade,
+                Grade = take.Grade ?? 0,
                 StudentName = $"{take.Student.User.FirstName} {take.Student.User.LastName}"
             };
 

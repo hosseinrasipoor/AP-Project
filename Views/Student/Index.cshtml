@@ -128,7 +128,8 @@ else
                     @for (int i = 0; i < Model.Courses.Count; i++)
                     {
                         var course = Model.Courses[i];
-                        bool hasPassed = course.Grade >= 10;
+                        bool hasGrade = course.Grade.HasValue;
+                        bool hasPassed = hasGrade && course.Grade.Value >= 10;
                         <tr>
                             <td class="fw-bold text-muted">@(i + 1)</td>
                             <td>
@@ -138,12 +139,28 @@ else
                                 </div>
                             </td>
                             <td>
-                                <span class="badge @(course.Grade >= 12 ? "badge-success" : course.Grade >= 10 ? "badge-warning" : "badge-danger") fs-6 font-monospace" dir="ltr">
-                                    @course.Grade.ToString("0.00")
-                                </span>
+                                @if (hasGrade)
+                                {
+                                    <span class="badge @(course.Grade.Value >= 12 ? "badge-success" : course.Grade.Value >= 10 ? "badge-warning" : "badge-danger") fs-6 font-monospace" dir="ltr">
+                                        @course.Grade.Value.ToString("0.00")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-sky text-dark fs-6">
+                                        ثبت نشده
+                                    </span>
+                                }
                             </td>
                             <td>
-                                @if (hasPassed)
+                                @if (!hasGrade)
+                                {
+                                    <span class="badge badge-ice text-dark">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        در انتظار نمره
+                                    </span>
+                                }
+                                else if (hasPassed)
                                 {
                                     <span class="badge badge-success">
                                         <i class="bi bi-check-circle me-1"></i>

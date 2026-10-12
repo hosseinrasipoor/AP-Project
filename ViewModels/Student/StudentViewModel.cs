@@ -1,4 +1,4 @@
-﻿namespace Golestan.ViewModels
+namespace Golestan.ViewModels
 {
     public class StudentDashboardViewModel
     {
@@ -9,7 +9,7 @@
 
     public class StudentCourseViewModel
     {
-        public string CourseTitle { get; set; }
-        public double Grade { get; set; }
+        public string CourseTitle { get; set; } = string.Empty;
+        public double? Grade { get; set; }
     }
 }
