@@ -1,25 +1,56 @@
-﻿@model Golestan.ViewModels.AddStudentViewModel
+@model Golestan.ViewModels.AddStudentViewModel
 
 @{
-    ViewData["Title"] = "افزودن دانشجو به سشن";
+    ViewData["Title"] = "افزودن دانشجو به گروه درسی";
 }
 
-<h2>@ViewData["Title"]</h2>
-
-<form asp-action="AddStudentToSection" method="post">
-    <input type="hidden" asp-for="SectionId" />
-
-    <div class="form-group">
-        <label asp-for="SelectedStudentId"></label>
-        <select asp-for="SelectedStudentId" class="form-control" asp-items="Model.Students">
-            <option value="">-- انتخاب دانشجو --</option>
-        </select>
-        <span asp-validation-for="SelectedStudentId" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">افزودن دانشجو به کلاس</h2>
+            <div class="text-muted small fw-normal">انتخاب دانشجو و ثبت‌نام در لیست کلاسی این سشن</div>
+        </div>
     </div>
+    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به جزئیات سشن
+    </a>
+</div>
 
-    <button type="submit" class="btn btn-success">افزودن</button>
-    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-secondary">بازگشت</a>
-</form>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="form-card">
+            <form asp-action="AddStudentToSection" method="post">
+                <input type="hidden" asp-for="SectionId" />
+
+                <div class="form-group mb-4">
+                    <label asp-for="SelectedStudentId" class="form-label">
+                        <i class="bi bi-person-check"></i>
+                        انتخاب دانشجو
+                    </label>
+                    <select asp-for="SelectedStudentId" class="form-select" asp-items="Model.Students" autofocus>
+                        <option value="">-- لطفاً دانشجو را انتخاب نمایید --</option>
+                    </select>
+                    <span asp-validation-for="SelectedStudentId" class="text-danger small mt-1 d-block"></span>
+                    <div class="form-text">تنها دانشجویانی که قبلاً در این سشن ثبت‌نام نکرده‌اند نمایش داده می‌شوند.</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        افزودن دانشجو به سشن
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -1,47 +1,69 @@
-﻿@model Golestan.ViewModels.Account.LoginViewModel
+@model Golestan.ViewModels.Account.LoginViewModel
 
-<style>
-    .login-container {
-        height: 100vh; /* تمام ارتفاع صفحه */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #40E0D0; /* پس‌زمینه فیروزه‌ای */
-    }
+@{
+    ViewData["Title"] = "ورود به سامانه";
+    ViewData["HideNavbar"] = true;
+}
 
-    .login-box {
-        background-color: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        width: 100%;
-        max-width: 400px;
-    }
+<div class="login-page-body">
+    <div class="login-glass-card">
+        <div class="login-brand-header">
+            <div class="login-emblem">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <h1 class="login-title">سامانه جامع گلستان</h1>
+            <p class="login-subtitle">پورتال خدمات الکترونیکی دانشجویان، اساتید و مدیران</p>
+        </div>
 
-    .login-box h2 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-</style>
+        <form asp-action="Login" method="post" novalidate>
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors?.Count > 0)
+            {
+                <div class="custom-alert badge-danger mb-3 p-3 rounded-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>
+                        @foreach (var error in ViewData.ModelState[string.Empty].Errors)
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                </div>
+            }
 
-<div class="login-container">
-    <div class="login-box">
-        <h2>Login page</h2>
-
-        <form asp-action="Login" method="post">
-            <div class="form-group mb-3">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+            <div class="form-field-group mb-3">
+                <label asp-for="Email" class="form-label">
+                    <i class="bi bi-envelope"></i>
+                    پست الکترونیکی (ایمیل)
+                </label>
+                <div class="input-icon-group">
+                    <input asp-for="Email" class="form-control" placeholder="example@university.ac.ir" dir="ltr" autofocus />
+                    <i class="bi bi-person icon-inside"></i>
+                </div>
+                <span asp-validation-for="Email" class="text-danger small mt-1 d-block"></span>
             </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" type="password" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+            <div class="form-field-group mb-4">
+                <label asp-for="Password" class="form-label">
+                    <i class="bi bi-shield-lock"></i>
+                    رمز عبور
+                </label>
+                <div class="input-icon-group">
+                    <input asp-for="Password" class="form-control" type="password" placeholder="••••••••" dir="ltr" />
+                    <i class="bi bi-key icon-inside"></i>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small mt-1 d-block"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
+                <i class="bi bi-box-arrow-in-right ms-1"></i>
+                ورود به سامانه
+            </button>
+
+            <div class="mt-4 pt-3 text-center border-top">
+                <div class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    در صورت فراموشی رمز عبور، با مدیریت آموزش تماس حاصل فرمایید.
+                </div>
+            </div>
         </form>
     </div>
 </div>

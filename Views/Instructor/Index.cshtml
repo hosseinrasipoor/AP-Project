@@ -1,25 +1,81 @@
-﻿@{
+@{
     ViewData["Title"] = "داشبورد استاد";
 }
 
-<h2 class="mb-4">داشبورد استاد</h2>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-person-video3"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">میز کار الکترونیکی استاد</h2>
+            <div class="text-muted small fw-normal">مدیریت سشن‌های فعال، مشاهده لیست دانشجویان و ثبت نمرات نهایی</div>
+        </div>
+    </div>
+    <div class="text-muted small">
+        <i class="bi bi-check-circle-fill text-success me-1"></i>
+        نیم‌سال تحصیلی جاری فعال است
+    </div>
+</div>
 
-<div class="container">
-    <div class="row justify-content-center">
-
-        <!-- سشن‌های من -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-primary h-100">
-                <div class="card-header bg-primary text-white">
-                    📚 سشن‌های من
+<div class="row g-4 mb-4">
+    <!-- کارت گروه‌های درسی -->
+    <div class="col-md-6 col-lg-5">
+        <div class="stat-widget-card h-100">
+            <div>
+                <div class="stat-header">
+                    <div>
+                        <h6 class="stat-title fs-5">گروه‌های درسی من (سشن‌ها)</h6>
+                        <span class="badge badge-sky mt-1">کلاس‌های ارائه‌شده</span>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-navy">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p>مشاهده لیست سشن‌هایی که شما استاد آن‌ها هستید.</p>
-                    <a href="@Url.Action("MySections", "Instructor")" class="btn btn-primary w-100">مشاهده سشن‌ها</a>
+                <p class="stat-desc">
+                    مشاهده تمامی دروسی که در این ترم به عنوان استاد به آن‌ها تخصیص داده شده‌اید، همراه با زمان جلسات، کلاس و فهرست دانشجویان هر گروه.
+                </p>
+            </div>
+            <div class="mt-3">
+                <a href="@Url.Action("MySections", "Instructor")" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-collection-play-fill me-1"></i>
+                    ورود به لیست سشن‌های من
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- کارت راهنما و ارزیابی -->
+    <div class="col-md-6 col-lg-7">
+        <div class="custom-card p-4 h-100">
+            <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+                <i class="bi bi-info-circle-fill text-primary"></i>
+                راهنمای ارزشیابی و نمرات دانشجویان
+            </h6>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="fw-bold mb-1 text-primary">
+                            <i class="bi bi-pencil-square me-1"></i>
+                            ثبت نمرات
+                        </div>
+                        <p class="text-muted small mb-0">
+                            پس از برگزاری آزمون پایانی، از بخش جزئیات سشن اقدام به ثبت یا اصلاح نمرات نمایید.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="fw-bold mb-1 text-primary">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            امتحانات نهایی
+                        </div>
+                        <p class="text-muted small mb-0">
+                            تاریخ و ساعت دقیق امتحان پایانی در جدول گروه‌های درسی قابل مشاهده می‌باشد.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>

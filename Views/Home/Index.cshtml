@@ -1,7 +1,85 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "صفحه اصلی";
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string dashboardUrl = "/";
+    if (isAuthenticated)
+    {
+        if (User.IsInRole("Student")) dashboardUrl = Url.Action("Index", "Student");
+        else if (User.IsInRole("Instructor")) dashboardUrl = Url.Action("Index", "Instructor");
+        else if (User.IsInRole("Admin")) dashboardUrl = Url.Action("Index", "Admin");
+    }
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome to Golestan website</h1>
+<div class="py-4">
+    <!-- Hero Banner -->
+    <div class="custom-card p-5 mb-5 text-center position-relative" style="background: linear-gradient(135deg, rgba(41, 54, 129, 0.04) 0%, rgba(66, 116, 217, 0.08) 100%); border-color: rgba(66, 116, 217, 0.15);">
+        <div class="mb-3">
+            <div class="brand-icon-box mx-auto" style="width: 64px; height: 64px; font-size: 2rem; border-radius: 18px;">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+        </div>
+        <h1 class="fw-bold text-primary mb-3" style="color: var(--primary-navy) !important;">
+            سامانه جامع مدیریت دانشگاهی گلستان
+        </h1>
+        <p class="text-muted mx-auto fs-5 mb-4" style="max-width: 650px;">
+            بستر یکپارچه و هوشمند ارائه خدمات الکترونیکی آموزشی، ثبت‌نام و مدیریت سوابق تحصیلی دانشجویان و اساتید
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            @if (isAuthenticated)
+            {
+                <a href="@dashboardUrl" class="btn btn-primary px-4 py-2 fs-6">
+                    <i class="bi bi-speedometer2 me-1"></i>
+                    ورود به پنل کاربری شما
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary px-4 py-2 fs-6">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    ورود به سامانه گلستان
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="custom-card h-100 p-4 text-center">
+                <div class="stat-icon-wrapper stat-icon-ice mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.7rem;">
+                    <i class="bi bi-mortarboard"></i>
+                </div>
+                <h4 class="fw-bold fs-5 mb-2" style="color: var(--primary-navy);">میز کار دانشجویی</h4>
+                <p class="text-muted small mb-0">
+                    مشاهده کارنامه ترمی، معدل کل، نمرات دروس ثبت‌نام‌شده و اطلاعات تحصیلی به‌صورت برخط و آنی.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card h-100 p-4 text-center">
+                <div class="stat-icon-wrapper stat-icon-accent mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.7rem;">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+                <h4 class="fw-bold fs-5 mb-2" style="color: var(--primary-navy);">پرتال اساتید</h4>
+                <p class="text-muted small mb-0">
+                    مدیریت سشن‌های درسی، مشاهده فهرست دانشجویان هر کلاس و ثبت و ویرایش نمرات امتحانات نهایی.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card h-100 p-4 text-center">
+                <div class="stat-icon-wrapper stat-icon-navy mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.7rem;">
+                    <i class="bi bi-gear-wide-connected"></i>
+                </div>
+                <h4 class="fw-bold fs-5 mb-2" style="color: var(--primary-navy);">مدیریت جامع آموزشی</h4>
+                <p class="text-muted small mb-0">
+                    تعریف دروس، تخصیص کلاس‌ها، تنظیم بازه‌های زمانی، سازماندهی کاربران و برنامه‌ریزی سشن‌ها.
+                </p>
+            </div>
+        </div>
+    </div>
 </div>

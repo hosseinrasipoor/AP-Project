@@ -1,14 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+
 namespace Golestan.ViewModels
 {
     public class CreateStudentViewModel
     {
-        [Required(ErrorMessage = "User is required")]
+        [Display(Name = "کاربر")]
+        [Required(ErrorMessage = "انتخاب کاربر الزامی است.")]
         public int UserId { get; set; }
 
-        [Required(ErrorMessage = "Enrollment date is required")]
+        [Display(Name = "تاریخ پذیرش")]
+        [Required(ErrorMessage = "وارد کردن تاریخ پذیرش الزامی است.")]
         [DataType(DataType.Date)]
         public DateTime EnrollmentDate { get; set; }
     }
-
 }

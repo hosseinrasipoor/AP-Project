@@ -1,38 +1,167 @@
-﻿@model Golestan.ViewModels.StudentDashboardViewModel
+@model Golestan.ViewModels.StudentDashboardViewModel
 
 @{
-    ViewData["Title"] = "پنل دانشجو";
+    ViewData["Title"] = "میز کار دانشجو";
 }
 
-<h2>خوش آمدید، @Model.StudentName</h2>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">خوش آمدید، @Model.StudentName</h2>
+            <div class="text-muted small fw-normal">کارنامه تحصیلی، کارکرد ترمی و وضعیت قبولی دروس ثبت‌نام‌شده</div>
+        </div>
+    </div>
+    <div>
+        <span class="badge badge-success px-3 py-2 fs-6">
+            <i class="bi bi-person-check-fill me-1"></i>
+            دانشجوی فعال
+        </span>
+    </div>
+</div>
 
-<hr />
+<!-- ردیف ویجت‌های آماری -->
+<div class="row g-4 mb-4">
+    <!-- ویجت معدل کل -->
+    <div class="col-md-6 col-lg-4">
+        <div class="gpa-card-widget h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="gpa-label">
+                    <i class="bi bi-award-fill me-1"></i>
+                    معدل کل دانشجو
+                </span>
+                <span class="badge badge-ice text-dark">
+                    @(Model.GPA >= 17 ? "الف (ممتاز)" : Model.GPA >= 12 ? "عادی" : "مشروط")
+                </span>
+            </div>
+            <div class="gpa-value font-monospace" dir="ltr">
+                @Model.GPA.ToString("0.00")
+            </div>
+            <div class="mt-2 text-white-50 small">
+                بر اساس نمرات ثبت‌شده دروس اخذشده
+            </div>
+        </div>
+    </div>
 
-<h4>معدل کل: <span style="color: darkgreen">@Model.GPA</span></h4>
+    <!-- ویجت تعداد دروس -->
+    <div class="col-md-6 col-lg-4">
+        <div class="stat-widget-card h-100">
+            <div>
+                <div class="stat-header">
+                    <div>
+                        <h6 class="stat-title fs-5">تعداد دروس اخذشده</h6>
+                        <span class="badge badge-sky mt-1">واحدهای ثبت‌نامی</span>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-ice">
+                        <i class="bi bi-journal-check"></i>
+                    </div>
+                </div>
+                <div class="display-6 fw-bold font-monospace mt-2" style="color: var(--primary-navy);" dir="ltr">
+                    @(Model.Courses?.Count ?? 0)
+                </div>
+            </div>
+            <div class="text-muted small mt-2">
+                مجموع دروسی که در پرونده آموزشی شما ثبت شده است.
+            </div>
+        </div>
+    </div>
 
-<table class="table table-striped mt-4">
-    <thead class="thead-dark">
-        <tr>
-            <th>نام درس</th>
-            <th>نمره</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Courses != null && Model.Courses.Any())
-        {
-            foreach (var course in Model.Courses)
-            {
-                <tr>
-                    <td>@course.CourseTitle</td>
-                    <td>@course.Grade</td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="2" class="text-center text-muted">هیچ درسی یافت نشد</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <!-- ویجت وضعیت تحصیلی -->
+    <div class="col-md-12 col-lg-4">
+        <div class="stat-widget-card h-100">
+            <div>
+                <div class="stat-header">
+                    <div>
+                        <h6 class="stat-title fs-5">وضعیت ترم و پرونده</h6>
+                        <span class="badge badge-ice mt-1">سامانه جامع آموزش</span>
+                    </div>
+                    <div class="stat-icon-wrapper stat-icon-accent">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                </div>
+                <div class="fw-bold mt-2 text-success fs-5">
+                    <i class="bi bi-check2-all me-1"></i>
+                    مجاز به انتخاب واحد و تحصیل
+                </div>
+            </div>
+            <div class="text-muted small mt-2">
+                کلیه سوابق تحصیلی مطابق آیین‌نامه آموزش دانشگاه محاسبه شده است.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول کارنامه و نمرات -->
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-table text-primary"></i>
+        کارنامه تحصیلی و ریز نمرات دروس
+    </h5>
+</div>
+
+@if (Model.Courses == null || !Model.Courses.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-journal-x"></i>
+        </div>
+        <div class="empty-state-text">هیچ درسی برای شما در سیستم ثبت نشده است.</div>
+        <p class="text-muted small">پس از ثبت‌نام در گروه‌های درسی، کارنامه شما در این بخش نمایش داده خواهد شد.</p>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ردیف</th>
+                        <th>عنوان درس</th>
+                        <th style="width: 150px;">نمره نهایی</th>
+                        <th style="width: 150px;">وضعیت قبولی</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Courses.Count; i++)
+                    {
+                        var course = Model.Courses[i];
+                        bool hasPassed = course.Grade >= 10;
+                        <tr>
+                            <td class="fw-bold text-muted">@(i + 1)</td>
+                            <td>
+                                <div class="fw-bold fs-6">
+                                    <i class="bi bi-book-half text-primary me-2"></i>
+                                    @course.CourseTitle
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge @(course.Grade >= 12 ? "badge-success" : course.Grade >= 10 ? "badge-warning" : "badge-danger") fs-6 font-monospace" dir="ltr">
+                                    @course.Grade.ToString("0.00")
+                                </span>
+                            </td>
+                            <td>
+                                @if (hasPassed)
+                                {
+                                    <span class="badge badge-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        قبول
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        مردود
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

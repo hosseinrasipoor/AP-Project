@@ -1,59 +1,123 @@
-﻿@model Golestan.ViewModels.CreateSectionViewModel
+@model Golestan.ViewModels.CreateSectionViewModel
 
 @{
-    ViewData["Title"] = "ایجاد سشن جدید";
+    ViewData["Title"] = "ایجاد گروه درسی جدید (سشن)";
 }
 
-<h2>@ViewData["Title"]</h2>
-
-<form asp-action="CreateSection" method="post" class="needs-validation" novalidate>
-    <div class="form-group mb-3">
-        <label asp-for="CourseId">درس</label>
-        <select asp-for="CourseId" asp-items="Model.Courses" class="form-control"></select>
-        <span asp-validation-for="CourseId" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-collection-play-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">ایجاد گروه درسی جدید (سشن)</h2>
+            <div class="text-muted small fw-normal">تخصیص درس، استاد، کلاس، بازه زمانی هفتگی و تاریخ برگزاری آزمون نهایی</div>
+        </div>
     </div>
+    <a asp-action="SectionTable" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به فهرست سشن‌ها
+    </a>
+</div>
 
-    <div class="form-group mb-3">
-        <label asp-for="ClassroomId">کلاس</label>
-        <select asp-for="ClassroomId" asp-items="Model.Classrooms" class="form-control"></select>
-        <span asp-validation-for="ClassroomId" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="form-card">
+            <form asp-action="CreateSection" method="post">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="CourseId" class="form-label">
+                            <i class="bi bi-book"></i>
+                            عنوان درس
+                        </label>
+                        <select asp-for="CourseId" asp-items="Model.Courses" class="form-select">
+                            <option value="">-- انتخاب درس --</option>
+                        </select>
+                        <span asp-validation-for="CourseId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="InstructorId" class="form-label">
+                            <i class="bi bi-person-video3"></i>
+                            استاد مدرس
+                        </label>
+                        <select asp-for="InstructorId" asp-items="Model.Instructors" class="form-select">
+                            <option value="">-- انتخاب استاد --</option>
+                        </select>
+                        <span asp-validation-for="InstructorId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ClassroomId" class="form-label">
+                            <i class="bi bi-building"></i>
+                            محل برگزاری (کلاس)
+                        </label>
+                        <select asp-for="ClassroomId" asp-items="Model.Classrooms" class="form-select">
+                            <option value="">-- انتخاب کلاس --</option>
+                        </select>
+                        <span asp-validation-for="ClassroomId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TimeSlotId" class="form-label">
+                            <i class="bi bi-clock"></i>
+                            زمان برگزاری (تایم‌اسلات)
+                        </label>
+                        <select asp-for="TimeSlotId" asp-items="Model.TimeSlots" class="form-select">
+                            <option value="">-- انتخاب زمان جلسه --</option>
+                        </select>
+                        <span asp-validation-for="TimeSlotId" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Year" class="form-label">
+                            <i class="bi bi-calendar"></i>
+                            سال تحصیلی
+                        </label>
+                        <input asp-for="Year" class="form-control" type="number" placeholder="مثال: 1403" />
+                        <span asp-validation-for="Year" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Semester" class="form-label">
+                            <i class="bi bi-calendar2-range"></i>
+                            نیم‌سال (ترم)
+                        </label>
+                        <select asp-for="Semester" class="form-select">
+                            <option value="1">نیم‌سال اول (مهر)</option>
+                            <option value="2">نیم‌سال دوم (بهمن)</option>
+                        </select>
+                        <span asp-validation-for="Semester" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="FinalExamDate" class="form-label">
+                        <i class="bi bi-calendar-check"></i>
+                        تاریخ برگزاری امتحان نهایی
+                    </label>
+                    <input asp-for="FinalExamDate" type="date" class="form-control" />
+                    <span asp-validation-for="FinalExamDate" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="SectionTable" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ثبت گروه درسی جدید
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="TimeSlotId">تایم اسلات</label>
-        <select asp-for="TimeSlotId" asp-items="Model.TimeSlots" class="form-control"></select>
-        <span asp-validation-for="TimeSlotId" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="InstructorId">استاد</label>
-        <select asp-for="InstructorId" asp-items="Model.Instructors" class="form-control"></select>
-        <span asp-validation-for="InstructorId" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Year">سال</label>
-        <input asp-for="Year" class="form-control" />
-        <span asp-validation-for="Year" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Semester">ترم</label>
-        <input asp-for="Semester" class="form-control" />
-        <span asp-validation-for="Semester" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="FinalExamDate">تاریخ امتحان نهایی</label>
-        <input asp-for="FinalExamDate" type="date" class="form-control" />
-        <span asp-validation-for="FinalExamDate" class="text-danger"></span>
-    </div>
-
-    
-
-    <button type="submit" class="btn btn-primary">ایجاد سشن</button>
-</form>
+</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

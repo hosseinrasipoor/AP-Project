@@ -1,102 +1,226 @@
-﻿@{
-    ViewData["Title"] = "داشبورد مدیریت";
+@{
+    ViewData["Title"] = "داشبورد مدیریت سامانه";
 }
 
-<h2 class="mb-4">داشبورد مدیریت سامانه</h2>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-speedometer2"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">داشبورد مدیریت سامانه</h2>
+            <div class="text-muted small fw-normal">کنترل و نظارت بر تمامی ساختارهای کاربران، آموزشی و برنامه‌ریزی گلستان</div>
+        </div>
+    </div>
+    <div class="text-muted small">
+        <i class="bi bi-clock-history me-1"></i>
+        آخرین ورود شما به عنوان مدیر کل سیستم
+    </div>
+</div>
 
-<div class="container">
-    <div class="row">
-
+<!-- بخش ۱: کاربران و پرونده‌ها -->
+<div class="mb-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-people-fill text-primary"></i>
+        مدیریت کاربران و پرونده‌های دانشگاهی
+    </h5>
+    <div class="row g-4">
         <!-- مدیریت کاربران -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-primary h-100">
-                <div class="card-header bg-primary text-white">
-                    👥 مدیریت کاربران
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">کاربران سیستم</h6>
+                        <div class="stat-icon-wrapper stat-icon-navy">
+                            <i class="bi bi-person-fill-gear"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">ثبت حساب‌های جدید، مدیریت ایمیل‌ها و دسترسی به اطلاعات کلی کاربران سامانه.</p>
                 </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateUser", "Admin")" class="btn btn-primary w-100 mb-2">➕ ساخت کاربر جدید</a>
-                    <a href="@Url.Action("UserTable", "Admin")" class="btn btn-primary w-100">📋 لیست کاربران</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- دانشجویان -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-success h-100">
-                <div class="card-header bg-success text-white">
-                    🎓 مدیریت دانشجویان
-                </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateStudent", "Admin")" class="btn btn-success w-100 mb-2">➕ افزودن دانشجو</a>
-                    <a href="@Url.Action("StudentTable", "Admin")" class="btn btn-success w-100">📋 لیست دانشجویان</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- اساتید -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-warning h-100">
-                <div class="card-header bg-warning text-dark">
-                    🧑‍🏫 مدیریت اساتید
-                </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateInstructor", "Admin")" class="btn btn-warning text-dark w-100 mb-2">➕ افزودن استاد</a>
-                    <a href="@Url.Action("InstructorTable", "Admin")" class="btn btn-warning text-dark w-100">📋 لیست اساتید</a>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateUser", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-person-plus-fill me-1"></i>
+                        ساخت کاربر جدید
+                    </a>
+                    <a href="@Url.Action("UserTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-list-ul me-1"></i>
+                        فهرست تمام کاربران
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- دروس -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-info h-100">
-                <div class="card-header bg-info text-white">
-                    📚 مدیریت دروس
+        <!-- مدیریت دانشجویان -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">پرونده دانشجویان</h6>
+                        <div class="stat-icon-wrapper stat-icon-ice">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">تخصیص شماره دانشجویی، ثبت‌نام ترمی و پیگیری وضعیت تحصیلی دانشجویان.</p>
                 </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateCourse", "Admin")" class="btn btn-info w-100 mb-2">➕ افزودن درس</a>
-                    <a href="@Url.Action("CourseTable", "Admin")" class="btn btn-info w-100">📋 لیست دروس</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- کلاس‌ها -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-secondary h-100">
-                <div class="card-header bg-secondary text-white">
-                    🏫 مدیریت کلاس‌ها
-                </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateClassroom", "Admin")" class="btn btn-secondary w-100 mb-2">➕ افزودن کلاس</a>
-                    <a href="@Url.Action("ClassroomTable", "Admin")" class="btn btn-secondary w-100">📋 لیست کلاس‌ها</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- بازه‌های زمانی -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-dark h-100">
-                <div class="card-header bg-dark text-white">
-                    🕒 مدیریت بازه‌های زمانی
-                </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateTimeSlot", "Admin")" class="btn btn-dark w-100 mb-2">➕ افزودن تایم‌اسلات</a>
-                    <a href="@Url.Action("TimeSlotTable", "Admin")" class="btn btn-dark w-100">📋 لیست تایم‌اسلات‌ها</a>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateStudent", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-plus-circle-fill me-1"></i>
+                        افزودن پرونده دانشجو
+                    </a>
+                    <a href="@Url.Action("StudentTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-table me-1"></i>
+                        فهرست دانشجویان
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- سشن‌ها -->
-        <div class="col-md-6 mb-4">
-            <div class="card border-danger h-100">
-                <div class="card-header bg-danger text-white">
-                    📅 مدیریت سشن‌ها
+        <!-- مدیریت اساتید -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">اعضای هیئت علمی و اساتید</h6>
+                        <div class="stat-icon-wrapper stat-icon-accent">
+                            <i class="bi bi-person-video3"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">تعریف پرونده استادی، مشخصات استخدامی، حقوق و پیوند به گروه‌های درسی.</p>
                 </div>
-                <div class="card-body">
-                    <a href="@Url.Action("CreateSection", "Admin")" class="btn btn-danger w-100 mb-2">➕ ساخت سشن</a>
-                    <a href="@Url.Action("SectionTable", "Admin")" class="btn btn-danger w-100">📋 لیست سشن‌ها</a>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateInstructor", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-person-plus me-1"></i>
+                        افزودن استاد جدید
+                    </a>
+                    <a href="@Url.Action("InstructorTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-person-lines-fill me-1"></i>
+                        فهرست اساتید
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- بخش ۲: ساختار درسی و زیرساخت -->
+<div class="mb-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-journal-bookmark-fill text-primary"></i>
+        ساختار آموزشی و زیرساخت دانشگاه
+    </h5>
+    <div class="row g-4">
+        <!-- مدیریت دروس -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">دروس دانشگاهی</h6>
+                        <div class="stat-icon-wrapper stat-icon-navy">
+                            <i class="bi bi-book-half"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">تعریف سرفصل‌ها، کد دروس، تعداد واحد و پیش‌نیازهای آموزشی مصوب دانشگاه.</p>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateCourse", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        تعریف درس جدید
+                    </a>
+                    <a href="@Url.Action("CourseTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-journal-text me-1"></i>
+                        فهرست دروس
+                    </a>
                 </div>
             </div>
         </div>
 
+        <!-- مدیریت کلاس‌ها -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">کلاس‌ها و فضاهای آموزشی</h6>
+                        <div class="stat-icon-wrapper stat-icon-ice">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">سازماندهی دانشکده‌ها، شماره کلاس‌ها و مدیریت ظرفیت فیزیکی هر اتاق درس.</p>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateClassroom", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        افزودن کلاس جدید
+                    </a>
+                    <a href="@Url.Action("ClassroomTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-buildings me-1"></i>
+                        فهرست کلاس‌ها
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- مدیریت بازه‌های زمانی -->
+        <div class="col-md-6 col-lg-4">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <h6 class="stat-title">بازه‌های زمانی (تایم‌اسلات)</h6>
+                        <div class="stat-icon-wrapper stat-icon-accent">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">تنظیم روزهای هفته و ساعت شروع و پایان برگزاری جلسات درسی هفتگی.</p>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="@Url.Action("CreateTimeSlot", "Admin")" class="btn btn-primary w-100 btn-sm">
+                        <i class="bi bi-clock me-1"></i>
+                        تعریف بازه زمانی
+                    </a>
+                    <a href="@Url.Action("TimeSlotTable", "Admin")" class="btn btn-ice w-100 btn-sm">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        فهرست بازه‌ها
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- بخش ۳: برنامه‌ریزی سشن‌ها -->
+<div class="mb-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-calendar-event-fill text-primary"></i>
+        برنامه‌ریزی سشن‌ها و گروه‌های درسی
+    </h5>
+    <div class="row g-4">
+        <!-- مدیریت سشن‌ها -->
+        <div class="col-lg-6">
+            <div class="stat-widget-card h-100">
+                <div>
+                    <div class="stat-header">
+                        <div>
+                            <h6 class="stat-title fs-5">گروه‌های درسی ارائه‌شده (سشن‌ها)</h6>
+                            <span class="badge badge-sky mt-1">هسته مرکزی آموزش</span>
+                        </div>
+                        <div class="stat-icon-wrapper stat-icon-navy">
+                            <i class="bi bi-collection-play-fill"></i>
+                        </div>
+                    </div>
+                    <p class="stat-desc">
+                        ارائه دروس ترمی با تخصیص استاد، شماره کلاس، بازه زمانی هفتگی و تاریخ امتحان نهایی. همچنین تخصیص دانشجو به گروه‌ها و مدیریت نمرات نهایی.
+                    </p>
+                </div>
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <a href="@Url.Action("CreateSection", "Admin")" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-plus-circle-fill me-1"></i>
+                        ایجاد سشن و گروه جدید
+                    </a>
+                    <a href="@Url.Action("SectionTable", "Admin")" class="btn btn-ice flex-grow-1">
+                        <i class="bi bi-table me-1"></i>
+                        مشاهده فهرست و جزئیات سشن‌ها
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

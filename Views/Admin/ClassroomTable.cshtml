@@ -1,33 +1,93 @@
-﻿@model List<Classroom>
+@using Golestan.Models
+@model List<Classroom>
 
-<h2>Classroom List</h2>
+@{
+    ViewData["Title"] = "فهرست کلاس‌ها و فضاهای آموزشی";
+}
 
-<a class="btn btn-success mb-3" asp-action="CreateClassroom">+ Add Classroom</a>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">فهرست کلاس‌ها و فضاهای آموزشی</h2>
+            <div class="text-muted small fw-normal">مدیریت ساختمان‌ها، شماره اتاق‌ها و ظرفیت صندلی‌های هر کلاس</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="CreateClassroom">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            افزودن کلاس جدید
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-right me-1"></i>
+            داشبورد
+        </a>
+    </div>
+</div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Building</th>
-            <th>Room Number</th>
-            <th>Capacity</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr>
-                <td>@c.Id</td>
-                <td>@c.Building</td>
-                <td>@c.RoomNumber</td>
-                <td>@c.Capacity</td>
-                <td>
-                    <form asp-action="DeleteClassroom" method="post" asp-route-id="@c.Id" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-building-x"></i>
+        </div>
+        <div class="empty-state-text">هیچ کلاسی در سامانه ثبت نشده است.</div>
+        <a class="btn btn-primary" asp-action="CreateClassroom">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            افزودن اولین کلاس
+        </a>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">شناسه</th>
+                        <th>نام ساختمان / دانشکده</th>
+                        <th>شماره کلاس</th>
+                        <th>ظرفیت مجاز</th>
+                        <th style="width: 110px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-muted">@c.Id</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-geo-alt-fill text-primary"></i>
+                                    <span class="fw-bold">@c.Building</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-sky fs-6">
+                                    کلاس @c.RoomNumber
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-ice fs-6">
+                                    <i class="bi bi-people-fill me-1"></i>
+                                    @c.Capacity نفر
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="DeleteClassroom" method="post" asp-route-id="@c.Id" class="d-inline" onsubmit="return confirm('آیا از حذف این کلاس اطمینان دارید؟ با حذف کلاس، سشن‌های وابسته به آن نیز متأثر خواهند شد.');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف کلاس">
+                                        <i class="bi bi-trash3-fill me-1"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

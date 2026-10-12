@@ -1,40 +1,97 @@
-﻿@using Golestan.ViewModels
+@using Golestan.ViewModels
 @model List<InstructorViewModel>
 
 @{
-    ViewData["Title"] = "Instructor Table";
+    ViewData["Title"] = "فهرست اساتید دانشگاه";
 }
 
-<h2>Instructor List</h2>
-<a class="btn btn-success mb-3" asp-action="CreateInstructor">+ Add Instructor</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Instructor ID</th>
-            
-            <th>Full Name</th>
-            <th>Email</th>
-            <th>Salary</th>
-            <th>Hire Date</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var instructor in Model)
-        {
-            <tr>
-                <td>@instructor.InstructorId</td>
-                
-                <td>@instructor.FullName</td>
-                <td>@instructor.Email</td>
-                <td>@instructor.Salary.ToString("C")</td>
-                <td>@instructor.HireDate.ToString("yyyy-MM-dd")</td>
-                <td>
-                    <form asp-action="DeleteInstructor" asp-route-id="@instructor.InstructorId" method="post" style="display:inline-block" onsubmit="return confirm('Are you sure you want to delete this instructor?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-person-video3"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">فهرست اعضای هیئت علمی و اساتید</h2>
+            <div class="text-muted small fw-normal">مدیریت اطلاعات شغلی، تاریخ استخدام و حقوق مدرسین دانشگاه</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="CreateInstructor">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            افزودن پرونده استاد
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-right me-1"></i>
+            داشبورد
+        </a>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-person-video2"></i>
+        </div>
+        <div class="empty-state-text">هیچ پرونده استادی در سیستم تعریف نشده است.</div>
+        <a class="btn btn-primary" asp-action="CreateInstructor">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            افزودن اولین استاد
+        </a>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 130px;">شناسه استاد</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>پست الکترونیکی</th>
+                        <th>میزان حقوق</th>
+                        <th>تاریخ استخدام</th>
+                        <th style="width: 110px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var instructor in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge badge-ice font-monospace fs-6">
+                                    <i class="bi bi-person-badge me-1"></i>
+                                    @instructor.InstructorId
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@instructor.FullName</div>
+                            </td>
+                            <td dir="ltr" class="text-end font-monospace text-muted">@instructor.Email</td>
+                            <td>
+                                <span class="badge badge-success fs-6">
+                                    @instructor.Salary.ToString("N0") ریال
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-sky">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    @instructor.HireDate.ToString("yyyy/MM/dd")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="DeleteInstructor" asp-route-id="@instructor.InstructorId" method="post" class="d-inline" onsubmit="return confirm('آیا از حذف پرونده این استاد اطمینان دارید؟ با حذف استاد، ایشان از گروه‌های درسی نیز حذف خواهند شد.');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف استاد">
+                                        <i class="bi bi-trash3-fill me-1"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

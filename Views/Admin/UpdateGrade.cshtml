@@ -1,20 +1,56 @@
-﻿@model Golestan.ViewModels.UpdateGradeViewModel
+@model Golestan.ViewModels.UpdateGradeViewModel
 
-<h3>ویرایش نمره برای: @Model.StudentName</h3>
+@{
+    ViewData["Title"] = $"ویرایش نمره: {Model.StudentName}";
+}
 
-<form asp-action="UpdateGrade" method="post">
-    <input type="hidden" asp-for="SectionId" />
-    <input type="hidden" asp-for="StudentId" />
-
-    <div class="form-group">
-        <label asp-for="Grade"></label>
-        <input asp-for="Grade" class="form-control" />
-        <span asp-validation-for="Grade" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">ویرایش و ثبت نمره نهایی</h2>
+            <div class="text-muted small fw-normal">دانشجو: <strong>@Model.StudentName</strong></div>
+        </div>
     </div>
+    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به جزئیات سشن
+    </a>
+</div>
 
-    <button type="submit" class="btn btn-success">ثبت نمره</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="form-card">
+            <form asp-action="UpdateGrade" method="post">
+                <input type="hidden" asp-for="SectionId" />
+                <input type="hidden" asp-for="StudentId" />
+
+                <div class="form-group mb-4">
+                    <label asp-for="Grade" class="form-label">
+                        <i class="bi bi-award"></i>
+                        نمره نهایی (از ۲۰)
+                    </label>
+                    <input asp-for="Grade" class="form-control fs-5 text-center font-monospace" type="number" min="0" max="20" step="0.25" placeholder="۲۰.۰۰" autofocus dir="ltr" />
+                    <span asp-validation-for="Grade" class="text-danger small mt-1 d-block"></span>
+                    <div class="form-text">نمره باید عددی در بازه ۰ تا ۲۰ باشد.</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ثبت نهایی نمره
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

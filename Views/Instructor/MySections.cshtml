@@ -1,36 +1,88 @@
-﻿@model List<Golestan.ViewModels.SectionTableViewModel>
+@model List<Golestan.ViewModels.SectionTableViewModel>
+
 @{
-    ViewData["Title"] = "سشن‌های من";
+    ViewData["Title"] = "سشن‌های درسی من";
 }
 
-<h2 class="mb-4">سشن‌های من</h2>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-collection-play-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">گروه‌های درسی من (سشن‌ها)</h2>
+            <div class="text-muted small fw-normal">فهرست دروسی که در این ترم هدایت آموزشی آن‌ها بر عهده شماست</div>
+        </div>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به داشبورد
+    </a>
+</div>
 
-<table class="table table-bordered table-striped">
-    <thead class="table-primary">
-        <tr>
-            <th>درس</th>
-            <th>سال</th>
-            <th>ترم</th>
-            <th>کلاس</th>
-            <th>زمان</th>
-            <th>تاریخ امتحان</th>
-            <th>جزئیات</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var s in Model)
-        {
-            <tr>
-                <td>@s.CourseTitle</td>
-                <td>@s.Year</td>
-                <td>@s.Semester</td>
-                <td>@s.ClassroomName</td>
-                <td>@s.TimeSlotInfo</td>
-                <td>@(s.FinalExamDate.ToString("yyyy/MM/dd") ?? "-")</td>
-                <td>
-                    <a class="btn btn-sm btn-info" href="@Url.Action("SectionDetails", "Instructor", new { id = s.Id })">مشاهده</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-journal-x"></i>
+        </div>
+        <div class="empty-state-text">هیچ سشن یا گروه درسی برای شما یافت نشد.</div>
+        <p class="text-muted small">در صورت بروز مشکل در تخصیص دروس، لطفاً با مدیریت آموزش تماس حاصل فرمایید.</p>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>عنوان درس</th>
+                        <th>سال و ترم</th>
+                        <th>محل برگزاری (کلاس)</th>
+                        <th>زمان جلسه هفتگی</th>
+                        <th>تاریخ امتحان نهایی</th>
+                        <th style="width: 130px;" class="text-center">مدیریت نمرات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold fs-6 text-primary">@s.CourseTitle</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-sky">
+                                    سال @s.Year - ترم @s.Semester
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-ice">
+                                    <i class="bi bi-building me-1"></i>
+                                    @s.ClassroomName
+                                </span>
+                            </td>
+                            <td class="small">
+                                <i class="bi bi-clock me-1 text-muted"></i>
+                                @s.TimeSlotInfo
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    @s.FinalExamDate.ToString("yyyy/MM/dd")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-primary btn-sm" href="@Url.Action("SectionDetails", "Instructor", new { id = s.Id })">
+                                    <i class="bi bi-people-fill me-1"></i>
+                                    لیست کلاسی
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

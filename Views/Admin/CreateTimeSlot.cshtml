@@ -1,32 +1,79 @@
-﻿@model Golestan.ViewModels.CreateTimeSlotViewModel
+@model Golestan.ViewModels.CreateTimeSlotViewModel
 
 @{
-    ViewData["Title"] = "ایجاد بازه زمانی جدید";
+    ViewData["Title"] = "تعریف بازه زمانی جدید";
 }
 
-<h2 class="mb-4">ایجاد بازه زمانی جدید</h2>
-
-<form asp-action="CreateTimeSlot" method="post">
-    <div class="form-group">
-        <label asp-for="Day" class="control-label"></label>
-        <input asp-for="Day" class="form-control" />
-        <span asp-validation-for="Day" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">تعریف بازه زمانی جدید</h2>
+            <div class="text-muted small fw-normal">تعیین روز هفته و ساعت شروع و پایان جلسات آموزشی</div>
+        </div>
     </div>
+    <a asp-action="TimeSlotTable" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به فهرست بازه‌ها
+    </a>
+</div>
 
-    <div class="form-group">
-        <label asp-for="StartTime" class="control-label"></label>
-        <input asp-for="StartTime" class="form-control" type="time" />
-        <span asp-validation-for="StartTime" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="form-card">
+            <form asp-action="CreateTimeSlot" method="post">
+                <div class="form-group mb-3">
+                    <label asp-for="Day" class="form-label">
+                        <i class="bi bi-calendar-event"></i>
+                        روز برگزاری جلسه در هفته
+                    </label>
+                    <select asp-for="Day" class="form-select" autofocus>
+                        <option value="">-- لطفاً روز هفته را انتخاب نمایید --</option>
+                        <option value="شنبه">شنبه</option>
+                        <option value="یکشنبه">یکشنبه</option>
+                        <option value="دوشنبه">دوشنبه</option>
+                        <option value="سه‌شنبه">سه‌شنبه</option>
+                        <option value="چهارشنبه">چهارشنبه</option>
+                        <option value="پنج‌شنبه">پنج‌شنبه</option>
+                    </select>
+                    <span asp-validation-for="Day" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="StartTime" class="form-label">
+                            <i class="bi bi-clock"></i>
+                            ساعت شروع
+                        </label>
+                        <input asp-for="StartTime" class="form-control" type="time" dir="ltr" />
+                        <span asp-validation-for="StartTime" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EndTime" class="form-label">
+                            <i class="bi bi-clock-fill"></i>
+                            ساعت پایان
+                        </label>
+                        <input asp-for="EndTime" class="form-control" type="time" dir="ltr" />
+                        <span asp-validation-for="EndTime" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="TimeSlotTable" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ثبت بازه زمانی
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label asp-for="EndTime" class="control-label"></label>
-        <input asp-for="EndTime" class="form-control" type="time" />
-        <span asp-validation-for="EndTime" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary mt-3">ثبت</button>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

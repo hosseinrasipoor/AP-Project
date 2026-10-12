@@ -1,19 +1,66 @@
-﻿@model Classroom
+@using Golestan.Models
+@model Classroom
 
-<h2>Create New Classroom</h2>
+@{
+    ViewData["Title"] = "افزودن کلاس جدید";
+}
 
-<form asp-action="CreateClassroom" method="post">
-    <div class="form-group">
-        <label>Building</label>
-        <input asp-for="Building" class="form-control" required />
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">افزودن کلاس آموزشی جدید</h2>
+            <div class="text-muted small fw-normal">تعریف مکان فیزیکی کلاس، شماره اتاق و ظرفیت مجاز دانشجو</div>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Room Number</label>
-        <input asp-for="RoomNumber" class="form-control" required />
+    <a asp-action="ClassroomTable" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به فهرست کلاس‌ها
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="form-card">
+            <form asp-action="CreateClassroom" method="post">
+                <div class="form-group mb-3">
+                    <label asp-for="Building" class="form-label">
+                        <i class="bi bi-geo-alt"></i>
+                        نام ساختمان یا دانشکده
+                    </label>
+                    <input asp-for="Building" class="form-control" placeholder="مثال: دانشکده فنی و مهندسی" required autofocus />
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="RoomNumber" class="form-label">
+                            <i class="bi bi-door-open"></i>
+                            شماره یا عنوان اتاق
+                        </label>
+                        <input asp-for="RoomNumber" class="form-control" placeholder="مثال: 302" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Capacity" class="form-label">
+                            <i class="bi bi-people"></i>
+                            ظرفیت مجاز صندلی‌ها
+                        </label>
+                        <input asp-for="Capacity" type="number" min="1" class="form-control" placeholder="مثال: 45" required />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="ClassroomTable" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ثبت کلاس جدید
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Capacity</label>
-        <input asp-for="Capacity" type="number" class="form-control" required />
-    </div>
-    <button type="submit" class="btn btn-primary mt-2">Create</button>
-</form>
+</div>

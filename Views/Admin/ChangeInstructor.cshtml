@@ -1,20 +1,54 @@
-﻿@model Golestan.ViewModels.ChangeInstructorViewModel
+@model Golestan.ViewModels.ChangeInstructorViewModel
 
-<h2>تغییر استاد</h2>
+@{
+    ViewData["Title"] = "تغییر استاد مدرس سشن";
+}
 
-<form asp-action="ChangeInstructor" method="post">
-    <input type="hidden" asp-for="SectionId" />
-
-    <div class="form-group">
-        <label asp-for="SelectedInstructorId"></label>
-        <select asp-for="SelectedInstructorId" asp-items="Model.Instructors" class="form-control"></select>
-        <span asp-validation-for="SelectedInstructorId" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-arrow-repeat"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">تغییر استاد مدرس سشن</h2>
+            <div class="text-muted small fw-normal">انتخاب و تخصیص استاد جدید برای تدریس این گروه درسی</div>
+        </div>
     </div>
+    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به جزئیات سشن
+    </a>
+</div>
 
-    <button type="submit" class="btn btn-primary mt-2">ذخیره</button>
-    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-secondary mt-2">بازگشت</a>
-</form>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="form-card">
+            <form asp-action="ChangeInstructor" method="post">
+                <input type="hidden" asp-for="SectionId" />
+
+                <div class="form-group mb-4">
+                    <label asp-for="SelectedInstructorId" class="form-label">
+                        <i class="bi bi-person-video3"></i>
+                        انتخاب استاد مدرس جدید
+                    </label>
+                    <select asp-for="SelectedInstructorId" asp-items="Model.Instructors" class="form-select" autofocus></select>
+                    <span asp-validation-for="SelectedInstructorId" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="SectionDetails" asp-route-id="@Model.SectionId" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ذخیره و تغییر استاد
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

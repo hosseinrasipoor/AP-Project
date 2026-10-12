@@ -1,36 +1,91 @@
-﻿@using Golestan.ViewModels
+@using Golestan.ViewModels
 @model List<StudentViewModel>
+
 @{
-    ViewData["Title"] = "Students";
+    ViewData["Title"] = "فهرست پرونده دانشجویان";
 }
 
-<h2>Student List</h2>
-<a class="btn btn-success mb-3" asp-action="CreateStudent">+ Add Student</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Full Name</th>
-            <th>StudentId</th>
-            <th>Email</th>
-            <th>Enrollment Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var student in Model)
-        {
-            <tr>
-                <td>@student.FullName</td>
-                <td>@student.StudentId</td>
-                <td>@student.Email</td>
-                <td>@student.EnrollmentDate.ToShortDateString()</td>
-                <td>
-                    
-                    <form asp-action="DeleteStudent" asp-route-id="@student.StudentId" method="post" style="display:inline;" onsubmit="return confirm('Are you sure?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">فهرست دانشجویان دانشگاه</h2>
+            <div class="text-muted small fw-normal">مدیریت شماره دانشجویی، تاریخ پذیرش و وضعیت پرونده‌های تحصیلی</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="CreateStudent">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            افزودن پرونده دانشجو
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-right me-1"></i>
+            داشبورد
+        </a>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div class="empty-state-text">هیچ پرونده دانشجویی ثبت نشده است.</div>
+        <a class="btn btn-primary" asp-action="CreateStudent">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            افزودن اولین دانشجو
+        </a>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">شماره دانشجویی</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>پست الکترونیکی</th>
+                        <th>تاریخ پذیرش / ثبت‌نام</th>
+                        <th style="width: 110px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge badge-ice font-monospace fs-6">
+                                    <i class="bi bi-person-badge me-1"></i>
+                                    @student.StudentId
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@student.FullName</div>
+                            </td>
+                            <td dir="ltr" class="text-end font-monospace text-muted">@student.Email</td>
+                            <td>
+                                <span class="badge badge-sky">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    @student.EnrollmentDate.ToString("yyyy/MM/dd")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="DeleteStudent" asp-route-id="@student.StudentId" method="post" class="d-inline" onsubmit="return confirm('آیا از حذف پرونده این دانشجو مطمئن هستید؟ با حذف دانشجو، تمامی سوابق تحصیلی وی در گروه‌های درسی حذف خواهند شد.');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف دانشجو">
+                                        <i class="bi bi-trash3-fill me-1"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

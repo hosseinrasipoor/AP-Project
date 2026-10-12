@@ -1,19 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Golestan.ViewModels
 {
     public class CreateInstructorViewModel
     {
-        [Required]
+        [Display(Name = "کاربر")]
+        [Required(ErrorMessage = "انتخاب کاربر الزامی است.")]
         public int UserId { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Salary must be a positive number.")]
+        [Display(Name = "حقوق")]
+        [Required(ErrorMessage = "وارد کردن مبلغ حقوق الزامی است.")]
+        [Range(0, double.MaxValue, ErrorMessage = "حقوق باید عددی مثبت باشد.")]
         public decimal Salary { get; set; }
 
-        [Required]
+        [Display(Name = "تاریخ استخدام")]
+        [Required(ErrorMessage = "وارد کردن تاریخ استخدام الزامی است.")]
         [DataType(DataType.Date)]
         public DateTime HireDate { get; set; }
     }
-
 }

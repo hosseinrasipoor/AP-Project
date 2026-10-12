@@ -1,25 +1,106 @@
-﻿
+@using Golestan.Models
 @model List<Golestan.ViewModels.Account.RoleSelectionViewModel>
 
-<h2>Choose your role</h2>
+@{
+    ViewData["Title"] = "انتخاب نقش کاربری";
+}
 
-<form method="post" asp-action="SelectRole" asp-controller="Account">
-    <div>
-        @foreach (var role in Model)
-        {
-            <div>
-                <input type="radio" name="SelectedProfileId" value="@role.ProfileId" required />
-                <input type="hidden" name="Roles[@role.ProfileId]" value="@role.Role" />
-                <label>
-                    @role.DisplayName
-                    @if (role.Role != RoleType.Admin)
-                    {
-                        <text> - Id: @role.ProfileId</text>
-                    }
-                </label>
-
+<div class="role-select-container">
+    <div class="page-header-box mb-4">
+        <div class="page-header-title">
+            <div class="page-header-icon">
+                <i class="bi bi-person-gear"></i>
             </div>
-        }
+            <div>
+                <h2 class="fs-4 mb-1">انتخاب نقش کاربری</h2>
+                <div class="text-muted small fw-normal">لطفاً نقش مورد نظر خود را جهت ورود به میز کار انتخاب فرمایید.</div>
+            </div>
+        </div>
     </div>
-    <button type="submit">Continue</button>
-</form>
+
+    <form method="post" asp-action="SelectRole" asp-controller="Account" id="roleSelectionForm">
+        <div class="mb-4">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var role = Model[i];
+                string roleIcon = "bi-person";
+                string roleBadgeClass = "badge-navy";
+                string roleTitle = role.DisplayName;
+
+                if (role.Role == RoleType.Admin)
+                {
+                    roleIcon = "bi-shield-shaded";
+                    roleBadgeClass = "badge-danger";
+                }
+                else if (role.Role == RoleType.Instructor)
+                {
+                    roleIcon = "bi-person-video3";
+                    roleBadgeClass = "badge-sky";
+                }
+                else if (role.Role == RoleType.Student)
+                {
+                    roleIcon = "bi-mortarboard-fill";
+                    roleBadgeClass = "badge-ice";
+                }
+
+                <label class="role-choice-card w-100 @(i == 0 ? "selected" : "")" for="role_@role.ProfileId">
+                    <input type="radio" 
+                           id="role_@role.ProfileId" 
+                           name="SelectedProfileId" 
+                           value="@role.ProfileId" 
+                           class="role-radio-custom form-check-input mt-0" 
+                           required 
+                           @(i == 0 ? "checked" : "") />
+
+                    <input type="hidden" name="Roles[@role.ProfileId]" value="@role.Role" />
+
+                    <div class="role-choice-icon">
+                        <i class="bi @roleIcon"></i>
+                    </div>
+
+                    <div class="role-choice-content">
+                        <div class="role-choice-title d-flex align-items-center gap-2">
+                            <span>@roleTitle</span>
+                            <span class="badge @roleBadgeClass">
+                                @(role.Role == RoleType.Admin ? "مدیریت" : role.Role == RoleType.Instructor ? "استاد" : "دانشجو")
+                            </span>
+                        </div>
+                        @if (role.Role != RoleType.Admin)
+                        {
+                            <div class="role-choice-sub">
+                                <i class="bi bi-hash"></i>
+                                شناسه پرونده آموزشی: <strong>@role.ProfileId</strong>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="text-primary fs-5">
+                        <i class="bi bi-chevron-left"></i>
+                    </div>
+                </label>
+            }
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center gap-3">
+            <a asp-action="Login" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-right"></i>
+                بازگشت به صفحه ورود
+            </a>
+            <button type="submit" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-check2-circle ms-1"></i>
+                ورود به پنل کاربری
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.role-choice-card input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.role-choice-card').forEach(card => card.classList.remove('selected'));
+                this.closest('.role-choice-card').classList.add('selected');
+            });
+        });
+    </script>
+}

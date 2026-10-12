@@ -1,35 +1,99 @@
-﻿@model List<Golestan.Models.TimeSlot>
+@using Golestan.Models
+@model List<TimeSlot>
 
 @{
-    ViewData["Title"] = "Time Slot Table";
+    ViewData["Title"] = "فهرست بازه‌های زمانی کلاس‌ها";
 }
 
-<h2>Time Slot List</h2>
-<a class="btn btn-success mb-3" asp-action="CreateTimeSlot">+ Add Time Slot</a>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Day</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var slot in Model)
-        {
-            <tr>
-                <td>@slot.Id</td>
-                <td>@slot.Day</td>
-                <td>@slot.StartTime.ToString("HH:mm")</td>
-                <td>@slot.EndTime.ToString("HH:mm")</td>
-                <td>
-                    <form asp-action="DeleteTimeSlot" asp-route-id="@slot.Id" method="post" style="display:inline">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">فهرست بازه‌های زمانی (تایم‌اسلات)</h2>
+            <div class="text-muted small fw-normal">تنظیم ساعات استاندارد برگزاری جلسات درسی در طول ایام هفته</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="CreateTimeSlot">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            تعریف بازه زمانی جدید
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-right me-1"></i>
+            داشبورد
+        </a>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="empty-state-text">هیچ بازه زمانی در سامانه تعریف نشده است.</div>
+        <a class="btn btn-primary" asp-action="CreateTimeSlot">
+            <i class="bi bi-plus-circle-fill me-1"></i>
+            تعریف اولین بازه زمانی
+        </a>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">شناسه</th>
+                        <th>روز هفته</th>
+                        <th>ساعت شروع</th>
+                        <th>ساعت پایان</th>
+                        <th>طول بازه</th>
+                        <th style="width: 110px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var slot in Model)
+                    {
+                        var duration = (slot.EndTime - slot.StartTime).TotalMinutes;
+                        <tr>
+                            <td class="fw-bold text-muted">@slot.Id</td>
+                            <td>
+                                <span class="badge badge-navy fs-6">
+                                    <i class="bi bi-calendar-day me-1"></i>
+                                    @slot.Day
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-sky font-monospace fs-6" dir="ltr">
+                                    <i class="bi bi-clock me-1"></i>
+                                    @slot.StartTime.ToString("HH:mm")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-ice font-monospace fs-6" dir="ltr">
+                                    <i class="bi bi-clock-fill me-1"></i>
+                                    @slot.EndTime.ToString("HH:mm")
+                                </span>
+                            </td>
+                            <td class="text-muted small">
+                                @(duration > 0 ? $"{duration} دقیقه" : "-")
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="DeleteTimeSlot" asp-route-id="@slot.Id" method="post" class="d-inline" onsubmit="return confirm('آیا از حذف این بازه زمانی اطمینان دارید؟');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف بازه زمانی">
+                                        <i class="bi bi-trash3-fill me-1"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

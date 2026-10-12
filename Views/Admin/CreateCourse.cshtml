@@ -1,43 +1,82 @@
-﻿@using Golestan.ViewModels
+@using Golestan.ViewModels
 @model CreateCourseViewModel
 
 @{
-    ViewData["Title"] = "Create Course";
+    ViewData["Title"] = "تعریف درس جدید";
 }
 
-<h2>Create New Course</h2>
-
-<form asp-action="CreateCourse" method="post">
-    <div class="form-group">
-        <label asp-for="Title"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-book-half"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">تعریف درس دانشگاهی جدید</h2>
+            <div class="text-muted small fw-normal">ثبت مشخصات درس، تعداد واحد و شرح سرفصل‌های آموزشی</div>
+        </div>
     </div>
+    <a asp-action="CourseTable" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به فهرست دروس
+    </a>
+</div>
 
-    <div class="form-group">
-        <label asp-for="Code"></label>
-        <input asp-for="Code" class="form-control" />
-        <span asp-validation-for="Code" class="text-danger"></span>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="form-card">
+            <form asp-action="CreateCourse" method="post">
+                <div class="form-group mb-3">
+                    <label asp-for="Title" class="form-label">
+                        <i class="bi bi-type"></i>
+                        عنوان درس
+                    </label>
+                    <input asp-for="Title" class="form-control" placeholder="مثال: مبانی برنامه‌نویسی و الگوریتم" autofocus />
+                    <span asp-validation-for="Title" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Code" class="form-label">
+                            <i class="bi bi-upc"></i>
+                            کد درس
+                        </label>
+                        <input asp-for="Code" class="form-control" placeholder="مثال: CS101" dir="ltr" />
+                        <span asp-validation-for="Code" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Unit" class="form-label">
+                            <i class="bi bi-layers"></i>
+                            تعداد واحد
+                        </label>
+                        <input asp-for="Unit" class="form-control" placeholder="مثال: ۳" />
+                        <span asp-validation-for="Unit" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="Description" class="form-label">
+                        <i class="bi bi-card-text"></i>
+                        توضیحات و سرفصل درس
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="توضیحات مختصر در مورد اهداف و پیش‌نیازهای درس..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2">
+                    <a asp-action="CourseTable" class="btn btn-outline-secondary">
+                        انصراف و بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        ثبت درس جدید
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label asp-for="Unit"></label>
-        <input asp-for="Unit" class="form-control" />
-        <span asp-validation-for="Unit" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-
-
-    <button type="submit" class="btn btn-primary mt-2">Create Course</button>
-</form>
+</div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

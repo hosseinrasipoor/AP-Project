@@ -1,44 +1,91 @@
-﻿@model List<Golestan.Models.User>
+@model List<Golestan.Models.User>
 
 @{
-    ViewData["Title"] = "User Table";
+    ViewData["Title"] = "فهرست کاربران سامانه";
 }
 
-<h2>Users List</h2>
-<a class="btn btn-success mb-3" asp-action="CreateUser">+ Add User</a>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">فهرست کاربران سامانه</h2>
+            <div class="text-muted small fw-normal">مشاهده، ایجاد و مدیریت حساب‌های کاربری فعال در سیستم</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="CreateUser">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            افزودن کاربر جدید
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-right me-1"></i>
+            بازگشت به داشبورد
+        </a>
+    </div>
+</div>
+
 @if (Model == null || !Model.Any())
 {
-    <div class="alert alert-info">No users found.</div>
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-person-x"></i>
+        </div>
+        <div class="empty-state-text">هیچ کاربری در سیستم یافت نشد.</div>
+        <a class="btn btn-primary" asp-action="CreateUser">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            ثبت اولین کاربر
+        </a>
+    </div>
 }
 else
 {
-    <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Created At</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.Count; i++)
-            {
-                <tr>
-                    <td>@(i + 1)</td>
-                    <td>@Model[i].FirstName</td>
-                    <td>@Model[i].LastName</td>
-                    <td>@Model[i].Email</td>
-                    <td>@Model[i].CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        <form asp-action="DeleteUser" asp-route-id="@Model[i].Id" method="post" style="display:inline">
-                            <button type="submit" onclick="return confirm('آیا مطمئن هستید؟');">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            
-            }
-        </tbody>
-    </table>
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ردیف</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>پست الکترونیکی</th>
+                        <th>تاریخ ایجاد حساب</th>
+                        <th style="width: 120px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var user = Model[i];
+                        <tr>
+                            <td class="fw-bold text-muted">@(i + 1)</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="stat-icon-wrapper stat-icon-ice" style="width: 34px; height: 34px; font-size: 1rem;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <span class="fw-bold">@user.FirstName @user.LastName</span>
+                                </div>
+                            </td>
+                            <td dir="ltr" class="text-end font-monospace text-primary">@user.Email</td>
+                            <td>
+                                <span class="badge badge-sky">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    @user.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="d-inline" onsubmit="return confirm('آیا از حذف این کاربر اطمینان دارید؟ تمامی اطلاعات مرتبط با این حساب حذف خواهد شد.');">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="حذف کاربر">
+                                        <i class="bi bi-trash3-fill me-1"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }

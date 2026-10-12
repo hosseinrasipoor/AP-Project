@@ -1,26 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Golestan.ViewModels
 {
-    
-
     public class CreateUserViewModel
     {
-        [Required(ErrorMessage = "First name is required")]
-        [StringLength(50, ErrorMessage = "First name must be less than 50 characters")]
+        [Display(Name = "نام")]
+        [Required(ErrorMessage = "وارد کردن نام الزامی است.")]
+        [StringLength(50, ErrorMessage = "نام نباید بیشتر از ۵۰ کاراکتر باشد.")]
         public string FirstName { get; set; }
 
-        [Required(ErrorMessage = "Last name is required")]
-        [StringLength(50, ErrorMessage = "Last name must be less than 50 characters")]
+        [Display(Name = "نام خانوادگی")]
+        [Required(ErrorMessage = "وارد کردن نام خانوادگی الزامی است.")]
+        [StringLength(50, ErrorMessage = "نام خانوادگی نباید بیشتر از ۵۰ کاراکتر باشد.")]
         public string LastName { get; set; }
 
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [Display(Name = "پست الکترونیکی")]
+        [Required(ErrorMessage = "وارد کردن ایمیل الزامی است.")]
+        [EmailAddress(ErrorMessage = "فرمت ایمیل وارد شده معتبر نیست.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Password is required")]
+        [Display(Name = "کلمه عبور")]
+        [Required(ErrorMessage = "وارد کردن کلمه عبور الزامی است.")]
         [DataType(DataType.Password)]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        [MinLength(6, ErrorMessage = "کلمه عبور باید حداقل ۶ کاراکتر باشد.")]
         public string Password { get; set; }
     }
 }

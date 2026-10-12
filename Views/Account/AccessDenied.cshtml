@@ -1,7 +1,25 @@
-﻿@{
-    ViewData["Title"] = "دسترسی ممنوع";
+@{
+    ViewData["Title"] = "عدم دسترسی";
 }
 
-<h2>دسترسی ممنوع</h2>
-<p>شما اجازه دسترسی به این صفحه را ندارید.</p>
-<a href="/">بازگشت به صفحه اصلی</a>
+<div class="row justify-content-center my-5">
+    <div class="col-md-7 col-lg-5">
+        <div class="custom-card text-center p-5">
+            <div class="mb-4">
+                <div class="empty-state-icon text-danger d-inline-block">
+                    <i class="bi bi-shield-x"></i>
+                </div>
+            </div>
+            <h2 class="text-danger fw-bold fs-4 mb-3">دسترسی به این بخش امکان‌پذیر نیست</h2>
+            <p class="text-muted mb-4">
+                حساب کاربری شما دارای مجوزهای لازم جهت مشاهده یا ویرایش اطلاعات این صفحه نمی‌باشد. در صورت نیاز به دسترسی، لطفاً با مدیر سیستم تماس بگیرید.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/" class="btn btn-primary">
+                    <i class="bi bi-house-door me-1"></i>
+                    بازگشت به صفحه اصلی
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

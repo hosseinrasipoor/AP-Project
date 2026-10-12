@@ -1,47 +1,188 @@
-﻿@model Golestan.ViewModels.SectionDetailsViewModel
+@model Golestan.ViewModels.SectionDetailsViewModel
 
-<h2>جزئیات سشن</h2>
+@{
+    ViewData["Title"] = $"جزئیات سشن: {Model.CourseTitle}";
+}
 
-<div>
-    <h4>@Model.CourseTitle (سال: @Model.Year - ترم: @Model.Semester)</h4>
-    <p>کلاس: @Model.ClassroomName</p>
-    <p>زمان: @Model.TimeSlotInfo</p>
-    <p>امتحان نهایی: @Model.FinalExamDate.ToString("yyyy/MM/dd")</p>
-    <p>استاد: @(string.IsNullOrEmpty(Model.InstructorName) ? "استاد ندارد" : Model.InstructorName)</p>
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-info-circle-fill"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">جزئیات سشن درسی: @Model.CourseTitle</h2>
+            <div class="text-muted small fw-normal">سال تحصیلی @Model.Year - نیم‌سال @Model.Semester</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="SectionTable" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-right me-1"></i>
+            بازگشت به فهرست سشن‌ها
+        </a>
+    </div>
 </div>
 
-<div>
-    <a asp-action="ChangeInstructor" asp-route-id="@Model.Id" class="btn btn-primary">تغییر استاد</a>
-    <a asp-action="AddStudentToSection" asp-route-sectionId="@Model.Id" class="btn btn-success">افزودن دانشجو</a>
+<!-- کارت مشخصات کلی سشن -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="custom-card p-4 h-100">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+                <i class="bi bi-journal-text text-primary"></i>
+                اطلاعات و مشخصات گروه آموزشی
+            </h5>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="text-muted small mb-1">استاد مدرس:</div>
+                        <div class="fw-bold fs-6">
+                            @if (string.IsNullOrEmpty(Model.InstructorName) || Model.InstructorName == "استاد ندارد")
+                            {
+                                <span class="badge badge-warning">بدون استاد</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-person-video3 text-primary me-1"></i>
+                                @Model.InstructorName
+                            }
+                        </div>
+                    </div>
+                </div>
 
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="text-muted small mb-1">محل تشکیل کلاس:</div>
+                        <div class="fw-bold fs-6">
+                            <i class="bi bi-building text-primary me-1"></i>
+                            @Model.ClassroomName
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="text-muted small mb-1">زمان‌بندی هفتگی:</div>
+                        <div class="fw-bold fs-6">
+                            <i class="bi bi-clock-history text-primary me-1"></i>
+                            @Model.TimeSlotInfo
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                        <div class="text-muted small mb-1">تاریخ امتحان نهایی:</div>
+                        <div class="fw-bold fs-6 text-danger">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            @Model.FinalExamDate.ToString("yyyy/MM/dd")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+                    <i class="bi bi-tools text-primary"></i>
+                    عملیات مدیریتی
+                </h5>
+                <p class="text-muted small mb-4">
+                    از طریق دکمه‌های زیر می‌توانید استاد این گروه را تغییر داده یا دانشجویان جدیدی به لیست کلاسی اضافه نمایید.
+                </p>
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <a asp-action="AddStudentToSection" asp-route-sectionId="@Model.Id" class="btn btn-primary w-100">
+                    <i class="bi bi-person-plus-fill me-1"></i>
+                    افزودن دانشجو به این کلاس
+                </a>
+                <a asp-action="ChangeInstructor" asp-route-id="@Model.Id" class="btn btn-ice w-100">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    تغییر استاد مدرس
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<h3>لیست دانشجویان</h3>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>نام دانشجو</th>
-            <th>نمره</th>  <!-- اضافه شده -->
-            <th>عملیات</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var student in Model.Students)
-        {
-            <tr>
-                <td>@student.StudentName</td>
-                <td>@(student.Grade.HasValue ? student.Grade.ToString() : "ثبت نشده")</td>
-                <td>
-                    <form asp-action="RemoveStudent" method="post" style="display:inline">
-                        <input type="hidden" name="sectionId" value="@Model.Id" />
-                        <input type="hidden" name="studentId" value="@student.StudentId" />
-                        <button type="submit" class="btn btn-danger btn-sm" 
-                                onclick="return confirm('آیا مطمئن هستید که می‌خواهید این دانشجو را حذف کنید؟');">حذف</button>
-                    </form>
-                    <a asp-action="UpdateGrade" asp-route-sectionId="@Model.Id" asp-route-studentId="@student.StudentId" class="btn btn-warning btn-sm">ویرایش نمره</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- جدول فهرست دانشجویان ثبت‌نام‌شده -->
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-people-fill text-primary"></i>
+        فهرست دانشجویان ثبت‌نام‌شده
+        <span class="badge badge-ice ms-1">@(Model.Students?.Count ?? 0) نفر</span>
+    </h5>
+</div>
 
+@if (Model.Students == null || !Model.Students.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="empty-state-text">تاکنون هیچ دانشجویی به این گروه درسی افزوده نشده است.</div>
+        <a asp-action="AddStudentToSection" asp-route-sectionId="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill me-1"></i>
+            افزودن اولین دانشجو
+        </a>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ردیف</th>
+                        <th>نام و نام خانوادگی دانشجو</th>
+                        <th>وضعیت نمره نهایی</th>
+                        <th style="width: 200px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Students.Count; i++)
+                    {
+                        var student = Model.Students[i];
+                        <tr>
+                            <td class="fw-bold text-muted">@(i + 1)</td>
+                            <td>
+                                <div class="fw-bold">@student.StudentName</div>
+                            </td>
+                            <td>
+                                @if (student.Grade.HasValue)
+                                {
+                                    <span class="badge @(student.Grade.Value >= 10 ? "badge-success" : "badge-danger") fs-6 font-monospace">
+                                        @student.Grade.Value
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">ثبت نشده</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex gap-1">
+                                    <a asp-action="UpdateGrade" asp-route-sectionId="@Model.Id" asp-route-studentId="@student.StudentId" class="btn btn-warning btn-sm" title="ثبت یا ویرایش نمره">
+                                        <i class="bi bi-pencil-square me-1"></i>
+                                        ویرایش نمره
+                                    </a>
+
+                                    <form asp-action="RemoveStudent" method="post" class="d-inline"
+                                          onsubmit="return confirm('آیا از حذف این دانشجو از سشن مطمئن هستید؟');">
+                                        <input type="hidden" name="sectionId" value="@Model.Id" />
+                                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                                        <button type="submit" class="btn btn-danger btn-sm" title="حذف از کلاس">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

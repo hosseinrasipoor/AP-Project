@@ -1,43 +1,132 @@
-﻿@model Golestan.ViewModels.SectionDetailsViewModel
+@model Golestan.ViewModels.SectionDetailsViewModel
+
 @{
-    ViewData["Title"] = "جزئیات سشن";
+    ViewData["Title"] = $"جزئیات و نمرات: {Model.CourseTitle}";
 }
 
-<h2 class="mb-3">جزئیات سشن: @Model.CourseTitle</h2>
-
-<div class="mb-3">
-    <strong>استاد:</strong> @Model.InstructorName <br />
-    <strong>کلاس:</strong> @Model.ClassroomName <br />
-    <strong>زمان:</strong> @Model.TimeSlotInfo <br />
-    <strong>ترم:</strong> @Model.Year - ترم @Model.Semester <br />
-    <strong>تاریخ امتحان:</strong> @(Model.FinalExamDate.ToString("yyyy/MM/dd") ?? "-")
+<div class="page-header-box">
+    <div class="page-header-title">
+        <div class="page-header-icon">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div>
+            <h2 class="fs-4 mb-1">لیست کلاسی و ثبت نمرات: @Model.CourseTitle</h2>
+            <div class="text-muted small fw-normal">سال تحصیلی @Model.Year - نیم‌سال @Model.Semester</div>
+        </div>
+    </div>
+    <a asp-action="MySections" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right me-1"></i>
+        بازگشت به سشن‌های من
+    </a>
 </div>
 
-<h4 class="mt-4">دانشجویان ثبت‌نام‌شده</h4>
+<!-- مشخصات سشن -->
+<div class="custom-card p-4 mb-4">
+    <div class="row g-3">
+        <div class="col-sm-4">
+            <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                <div class="text-muted small mb-1">محل تشکیل کلاس:</div>
+                <div class="fw-bold">
+                    <i class="bi bi-building text-primary me-1"></i>
+                    @Model.ClassroomName
+                </div>
+            </div>
+        </div>
 
-<table class="table table-bordered">
-    <thead class="table-secondary">
-        <tr>
-            <th>نام دانشجو</th>
-            <th>نمره</th>
-            <th>عملیات</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var student in Model.Students)
-        {
-            <tr>
-                <td>@student.StudentName</td>
-                <td>@(student.Grade?.ToString() ?? "-")</td>
-                <td>
-                    <a class="btn btn-sm btn-warning" href="@Url.Action("UpdateGrade", "Instructor", new { sectionId = Model.Id, studentId = student.StudentId })">ویرایش نمره</a>
-                    <form method="post" asp-action="RemoveStudent" asp-controller="Instructor" class="d-inline">
-                        <input type="hidden" name="sectionId" value="@Model.Id" />
-                        <input type="hidden" name="studentId" value="@student.StudentId" />
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('آیا مطمئن هستید؟')">حذف</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+        <div class="col-sm-4">
+            <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                <div class="text-muted small mb-1">زمان‌بندی هفتگی:</div>
+                <div class="fw-bold">
+                    <i class="bi bi-clock-history text-primary me-1"></i>
+                    @Model.TimeSlotInfo
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="p-3 rounded-3" style="background-color: var(--soft-ice-light);">
+                <div class="text-muted small mb-1">تاریخ امتحان نهایی:</div>
+                <div class="fw-bold text-danger">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    @Model.FinalExamDate.ToString("yyyy/MM/dd")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: var(--primary-navy);">
+        <i class="bi bi-people-fill text-primary"></i>
+        دانشجویان ثبت‌نام‌شده در این گروه
+        <span class="badge badge-ice ms-1">@(Model.Students?.Count ?? 0) نفر</span>
+    </h5>
+</div>
+
+@if (Model.Students == null || !Model.Students.Any())
+{
+    <div class="empty-state-box">
+        <div class="empty-state-icon">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="empty-state-text">هیچ دانشجویی در این کلاس ثبت‌نام نکرده است.</div>
+    </div>
+}
+else
+{
+    <div class="table-container-card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ردیف</th>
+                        <th>نام و نام خانوادگی دانشجو</th>
+                        <th>نمره نهایی ثبت‌شده</th>
+                        <th style="width: 200px;" class="text-center">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Students.Count; i++)
+                    {
+                        var student = Model.Students[i];
+                        <tr>
+                            <td class="fw-bold text-muted">@(i + 1)</td>
+                            <td>
+                                <div class="fw-bold">@student.StudentName</div>
+                            </td>
+                            <td>
+                                @if (student.Grade.HasValue)
+                                {
+                                    <span class="badge @(student.Grade.Value >= 10 ? "badge-success" : "badge-danger") fs-6 font-monospace">
+                                        @student.Grade.Value
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">ثبت نشده</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex gap-1">
+                                    <a class="btn btn-warning btn-sm" href="@Url.Action("UpdateGrade", "Instructor", new { sectionId = Model.Id, studentId = student.StudentId })">
+                                        <i class="bi bi-pencil-square me-1"></i>
+                                        ویرایش نمره
+                                    </a>
+
+                                    <form method="post" asp-action="RemoveStudent" asp-controller="Instructor" class="d-inline"
+                                          onsubmit="return confirm('آیا از حذف این دانشجو از لیست کلاسی اطمینان دارید؟');">
+                                        <input type="hidden" name="sectionId" value="@Model.Id" />
+                                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                                        <button type="submit" class="btn btn-danger btn-sm" title="حذف دانشجو">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
